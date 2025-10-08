@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="50"
+             x:Class="Clockmaker0.Controls.CharacterPreview.PreviewScriptCharacter"
+             Loaded="Control_OnLoaded"
+             DragDrop.AllowDrop="True">
+    <Grid x:Name="ControlGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="Auto"
+                              MinWidth="150"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="50"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Text="⋮⋮⋮" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Cursor="Hand" x:Name="DragHandle"/>
+        <Image Grid.Column="2"
+               x:Name="CharacterImage"
+               Width="50"
+               Height="50"/>
+        <TextBox Grid.Column="4"
+                   Text="loading..."
+                   HorizontalAlignment="Stretch"
+                   VerticalAlignment="Center"
+                   TextWrapping="Wrap"
+                   x:Name="NameTextBox"/>
+        <TextBlock Grid.Column="4"
+                   Padding="11,7,7,7"
+                   Text="loading..."
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   TextWrapping="Wrap"
+                   x:Name="NameTextBlock"
+                   IsVisible="False"/>
+        <TextBox Grid.Column="6"
+                 Text="loading..."
+                 HorizontalAlignment="Stretch"
+                 VerticalAlignment="Center"
+                 TextWrapping="Wrap"
+                 x:Name="AbilityTextBox"/>
+        <TextBlock Grid.Column="6"
+                   Padding="11,7,7,7"
+                   Text="loading..."
+                   HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   TextWrapping="Wrap"
+                   x:Name="AbilityTextBlock"
+                   IsVisible="False"/>
+        <Button Grid.Column="8" x:Name="ActionButton"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                FontSize="20"
+                Content="ⓘ">
+            <Button.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="_Expand Character" Click="ExpandMenuItem_OnClick"/>
+                    <MenuItem Header="_Pop Out Character" Click="PopOutMenuItem_OnClick"/>
+                    <MenuItem Header="_Delete Character" Click="DeleteMenuItem_OnClick"/>
+                </ContextMenu>
+            </Button.ContextMenu>
+        </Button>
+    </Grid>
+</UserControl>

@@ -1,0 +1,12 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.Jinxes">
+    <ScrollViewer>
+        <StackPanel x:Name="JinxesStack">
+            <Button Content="Create Jinx" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" x:Name="CreateJinxButton" Margin="0,0,0,10" Click="CreateJinxButton_OnClick"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignWidth="400"
+             d:DesignHeight="100"
+             x:Class="Clockmaker0.Controls.CharacterPreview.ScriptTitle">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="50"/>
+
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0"
+                   Grid.Column="1"
+                   Text="Title"
+                   HorizontalAlignment="Center"/>
+        <TextBlock Grid.Row="0"
+                   Grid.Column="3"
+                   Text="Author"
+                   HorizontalAlignment="Center"/>
+        <TextBox Grid.Row="1"
+                 Grid.Column="1"
+                 x:Name="TitleTextBox"
+        />
+        <TextBox Grid.Row="1"
+                 Grid.Column="3"
+                 x:Name="AuthorTextBox"/>
+        <Button Grid.Row="0"
+                Grid.Column="5"
+                Grid.RowSpan="2"
+                Content="ⓘ"
+                VerticalAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center"
+                FontSize="20"
+                x:Name="ExpandButton"
+                Click="ExpandButton_OnClick"/>
+        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="6" Margin="0,10,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Add Character" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" VerticalAlignment="Stretch" VerticalContentAlignment="Center" Click="NewCharacterButton_OnClick"/>
+        </Grid>
+    </Grid>
+</UserControl>

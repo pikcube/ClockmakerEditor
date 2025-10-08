@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Remove="clock_time_5025.ico" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="clock_time_5025.ico" />
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Include="default\0_-1.webp" />
+        <EmbeddedResource Include="default\0_-2.webp" />
+        <EmbeddedResource Include="default\0_-3.webp" />
+        <EmbeddedResource Include="default\0_0.webp" />
+        <EmbeddedResource Include="default\1_0.webp" />
+        <EmbeddedResource Include="default\1_1.webp" />
+        <EmbeddedResource Include="default\2_0.webp" />
+        <EmbeddedResource Include="default\2_1.webp" />
+        <EmbeddedResource Include="default\3_0.webp" />
+        <EmbeddedResource Include="default\3_1.webp" />
+        <EmbeddedResource Include="default\4_0.webp" />
+        <EmbeddedResource Include="default\4_1.webp" />
+        <EmbeddedResource Include="default\5_0.webp" />
+        <EmbeddedResource Include="default\6_0.webp" />
+        <EmbeddedResource Include="default\6_1.webp" />
+        <EmbeddedResource Include="default\6_2.webp" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="11.3.7" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.7" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.7" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.7" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.7" />
+        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.7">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.8.2" />
+        <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
+        <PackageReference Include="Octokit" Version="14.0.0" />
+        <PackageReference Include="Pikcube.AddIns" Version="1.0.1" />
+        <PackageReference Include="Pikcube.ReadWriteScript.Offline" Version="1.0.59" />
+        <PackageReference Include="SecureStore" Version="1.2.2" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+        <Compile Update="Controls\CharacterImport\OfficialCharacterPreview.axaml.cs">
+            <DependentUpon>OfficialCharacterPreview.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\CharacterPreview\PreviewScriptCharacter.axaml.cs">
+            <DependentUpon>PreviewScriptCharacter.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\EditCharacterControls\EditCharacter.axaml.cs">
+            <DependentUpon>EditCharacter.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\EditCharacterControls\Tabs\EditAppFeatures.axaml.cs">
+            <DependentUpon>EditAppFeatures.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\EditCharacterControls\Tabs\AbstractNightOrder.axaml.cs">
+            <DependentUpon>AbstractNightOrder.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\EditCharacter\Tabs\EditReminderToken.axaml.cs">
+            <DependentUpon>EditReminderToken.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\EditMetaControls\Tabs\BootlegRulesTab.axaml.cs">
+            <DependentUpon>BootlegRulesTab.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\EditMetaControls\Tabs\EditBootlegRule.axaml.cs">
+            <DependentUpon>EditBootlegRule.axaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
+</Project>

@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures.TimeScopeGrid">
+    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+        <Grid IsVisible="True" x:Name="MoreInfoGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*" MinWidth="70"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*" MinWidth="70"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*" MinWidth="70"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*" MinWidth="70"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*" MinWidth="70"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Time" Grid.Column="0" Grid.Row="0"  HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <TextBlock x:Name="PregameTextBlock" Text="Pregame" Grid.Row="0" Grid.Column="2"  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock x:Name="FirstNightTextBlock" Text="First Night" Grid.Row="0" Grid.Column="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock x:Name="FirstDayTextBlock" Text="First Day" Grid.Row="0" Grid.Column="6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock x:Name="OtherNightTextBlock" Text="Other Night" Grid.Row="0" Grid.Column="8" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <TextBlock x:Name="OtherDayTextBlock" Text="Other Day" Grid.Row="0" Grid.Column="10" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <CheckBox x:Name="AllPregameCheckBox" Grid.Row="2" Grid.Column="2" HorizontalAlignment="Center"/>
+            <CheckBox x:Name="AllFirstNightCheckBox" Content="" Grid.Row="2" Grid.Column="4" HorizontalAlignment="Center"/>
+            <CheckBox x:Name="AllFirstDayCheckBox" Content="" Grid.Row="2" Grid.Column="6" HorizontalAlignment="Center"/>
+            <CheckBox x:Name="AllOtherNightCheckBox" Content="" Grid.Row="2" Grid.Column="8" HorizontalAlignment="Center"/>
+            <CheckBox x:Name="AllOtherDayCheckBox" Content="" Grid.Row="2" Grid.Column="10" HorizontalAlignment="Center"/>
+
+            <TextBlock x:Name="ScopeTextBlock" Text="Scope" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            <CheckBox x:Name="AllSelfCheckBox" Content="Self" Grid.Row="4" Grid.Column="0" HorizontalAlignment="Left"/>
+            <CheckBox x:Name="AllTownsfolkCheckBox" Content="Townsfolk" Grid.Row="6" Grid.Column="0" HorizontalAlignment="Left"/>
+            <CheckBox x:Name="AllOutsidersCheckBox" Content="Outsiders" Grid.Row="8" Grid.Column="0" HorizontalAlignment="Left"/>
+            <CheckBox x:Name="AllMinionsCheckBox" Content="Minions" Grid.Row="10" Grid.Column="0" HorizontalAlignment="Left"/>
+            <CheckBox x:Name="AllDemonsCheckBox" Content="Demons" Grid.Row="12" Grid.Column="0" HorizontalAlignment="Left"/>
+            <CheckBox x:Name="AllTravellersCheckBox" Content="Travellers" Grid.Row="14" Grid.Column="0" HorizontalAlignment="Left"/>
+            <CheckBox x:Name="AllDeadCheckBox" Content="Dead" Grid.Row="16" Grid.Column="0" HorizontalAlignment="Left"/>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

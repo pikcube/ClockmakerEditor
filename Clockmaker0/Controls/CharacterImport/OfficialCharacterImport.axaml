@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="450" MinWidth="500"
+        x:Class="Clockmaker0.Controls.CharacterImport.OfficialCharacterImport"
+        Title="OfficialCharacterImport">
+    <Grid RowDefinitions="Auto,1,*">
+        <Grid Grid.Row="0" ColumnDefinitions="10,Auto,10,*,10,Auto,10">
+            <TextBlock Grid.Column="1" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center">Name:</TextBlock>
+            <TextBox Grid.Column="3" x:Name="CharacterNameTextBox" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" TextChanged="CharacterNameTextBox_OnTextChanged"/>
+            <Button Grid.Column="5" Content="Import" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" FontSize="20" x:Name="ImportButton" Click="ImportButton_OnClick"/>
+        </Grid>
+        <ListBox Grid.Column="0" Grid.Row="2" x:Name="ResultPanel"/>
+    </Grid>
+</Window>

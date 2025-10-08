@@ -1,0 +1,13 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+             x:Class="Clockmaker0.Controls.EditMetaControls.Tabs.CustomLogo">
+    <StackPanel>
+        <Image x:Name="LogoImage" MinHeight="200" MaxHeight="300" Margin="0, 10, 0, 10"/>
+        <CheckBox x:Name="HideTitleCheckBox" Content="Show Script Title On Top of Logo"/>
+        <Button x:Name="ReplaceButton" Content="Replace Logo" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+        <Button x:Name="DeleteButton" Content="Remove Logo" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"/>
+    </StackPanel>
+</UserControl>

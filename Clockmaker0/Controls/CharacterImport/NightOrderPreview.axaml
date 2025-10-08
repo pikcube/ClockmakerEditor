@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:characterImport="clr-namespace:Clockmaker0.Controls.CharacterImport"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="50"
+             x:Class="Clockmaker0.Controls.CharacterImport.NightOrderPreview"
+             DragDrop.AllowDrop="True" Background="Transparent">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Text="⋮⋮⋮" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Cursor="Hand"/>
+        <characterImport:SimpleCharacterPreview Grid.Column="2" x:Name="SimpleCharacterPreview"/>
+        <TextBlock Grid.Column="4" x:Name="NightOrderText" TextWrapping="Wrap" VerticalAlignment="Center" Background="Transparent"/>
+    </Grid>
+</UserControl>
