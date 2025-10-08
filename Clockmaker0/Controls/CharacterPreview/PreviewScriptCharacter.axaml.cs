@@ -89,39 +89,46 @@ public partial class PreviewScriptCharacter : UserControl, IDelete
 
     private void OnDragOver(object? sender, DragEventArgs e)
     {
-        if (LoadedScript is null || LoadedCharacter is null || e.Data.Get("character") is not MutableCharacter dragCharacter || e.Data.Get("script") is not MutableBotcScript script)
+        if (e.DataTransfer is not CustomDataTransfer<PreviewDrag> cdt)
+        {
+            return;
+        }
+
+        PreviewDrag? data = cdt.Value;
+
+        if (LoadedScript is null || LoadedCharacter is null)
         {
             e.DragEffects = DragDropEffects.None;
             return;
         }
 
-        if (script != LoadedScript)
+        if (data.LoadedScript != LoadedScript)
         {
             e.DragEffects = DragDropEffects.Copy;
             OnDragOverMe?.Invoke(this, new SimpleEventArgs<MutableCharacter?, PreviewScriptCharacter?>
             {
                 Value1 = LoadedCharacter,
-                Value2 = e.Data.Get("obj") as PreviewScriptCharacter
+                Value2 = data.Preview
             });
             return;
         }
 
         e.DragEffects = DragDropEffects.Move;
 
-        bool allowDrag = dragCharacter.Team == LoadedCharacter.Team;
+        bool allowDrag = data.LoadedCharacter.Team == LoadedCharacter.Team;
         if (allowDrag)
         {
             OnDragOverMe?.Invoke(this, new SimpleEventArgs<MutableCharacter?, PreviewScriptCharacter?>
             {
                 Value1 = LoadedCharacter,
-                Value2 = e.Data.Get("obj") as PreviewScriptCharacter
+                Value2 = data.Preview
             });
             return;
         }
 
         int indexOfMe = LoadedScript.Characters.IndexOf(LoadedCharacter);
-        int firstIndex = LoadedScript.Characters.FindIndex(c => c.Team == dragCharacter.Team);
-        int lastIndex = LoadedScript.Characters.FindLastIndex(c => c.Team == dragCharacter.Team);
+        int firstIndex = LoadedScript.Characters.FindIndex(c => c.Team == data.LoadedCharacter.Team);
+        int lastIndex = LoadedScript.Characters.FindLastIndex(c => c.Team == data.LoadedCharacter.Team);
 
         int firstDiff = Math.Abs(firstIndex - indexOfMe);
         int lastDiff = Math.Abs(lastIndex - indexOfMe);
@@ -131,7 +138,7 @@ public partial class PreviewScriptCharacter : UserControl, IDelete
             OnDragOverMe?.Invoke(this, new SimpleEventArgs<MutableCharacter?, PreviewScriptCharacter?>
             {
                 Value1 = LoadedScript.Characters[firstIndex],
-                Value2 = e.Data.Get("obj") as PreviewScriptCharacter
+                Value2 = data.Preview
             });
         }
         else
@@ -139,7 +146,7 @@ public partial class PreviewScriptCharacter : UserControl, IDelete
             OnDragOverMe?.Invoke(this, new SimpleEventArgs<MutableCharacter?, PreviewScriptCharacter?>
             {
                 Value1 = LoadedScript.Characters[lastIndex],
-                Value2 = e.Data.Get("obj") as PreviewScriptCharacter
+                Value2 = data.Preview
             });
         }
     }
@@ -174,40 +181,32 @@ public partial class PreviewScriptCharacter : UserControl, IDelete
             return;
         }
 
-
-        if (e.Data.Get("character") is not MutableCharacter droppedCharacter)
+        if (e.DataTransfer is not CustomDataTransfer<PreviewDrag> cdt)
         {
             return;
         }
 
-        if (droppedCharacter == LoadedCharacter)
+        PreviewDrag? data = cdt.Value;
+
+
+        if (data.LoadedCharacter == LoadedCharacter)
         {
             return;
         }
 
-        if (e.Data.Get("script") is not MutableBotcScript script)
+        if (data.LoadedScript != LoadedScript)
         {
-            return;
-        }
-
-        if (script != LoadedScript)
-        {
-            if (e.Data.Get("loader") is not ScriptImageLoader loader)
-            {
-                return;
-            }
-
             if (ImageLoader is null)
             {
                 return;
             }
 
-            TaskManager.ScheduleAsyncTask(async () => await App.CopyCharacterAsync(droppedCharacter, loader, LoadedScript, LoadedCharacter,
-                ImageLoader, script.Jinxes, c => OnAddCharacter?.Invoke(this, new SimpleEventArgs<MutableCharacter>(c))));
+            TaskManager.ScheduleAsyncTask(async () => await App.CopyCharacterAsync(data.LoadedCharacter, data.Loader, LoadedScript, LoadedCharacter,
+                ImageLoader, data.LoadedScript.Jinxes, c => OnAddCharacter?.Invoke(this, new SimpleEventArgs<MutableCharacter>(c))));
             return;
         }
 
-        LoadedScript?.Characters.MoveTo(droppedCharacter, LoadedCharacter);
+        LoadedScript?.Characters.MoveTo(data.LoadedCharacter, LoadedCharacter);
         e.Handled = true;
     }
 
@@ -228,16 +227,14 @@ public partial class PreviewScriptCharacter : UserControl, IDelete
 
         }
 
-        DataObject data = new();
-        data.Set("obj", this);
-        data.Set("character", LoadedCharacter ?? throw new NoNullAllowedException());
-        data.Set("immutableCharacter", LoadedCharacter.ToImmutable(LoadedScript.Jinxes));
-        data.Set("script", LoadedScript);
-        data.Set("loader", ImageLoader);
-        data.Set(DataFormats.Text, JsonConvert.SerializeObject(LoadedCharacter.ToImmutable(LoadedScript.Jinxes), Formatting.Indented));
+        PreviewDrag previewDrag = new(this, LoadedCharacter ?? throw new NoNullAllowedException(), LoadedCharacter.ToImmutable(LoadedScript.Jinxes), LoadedScript, ImageLoader);
+        string json = JsonConvert.SerializeObject(LoadedCharacter.ToImmutable(LoadedScript.Jinxes), Formatting.Indented);
+
+        CustomDataTransfer<PreviewDrag> cdt = new(previewDrag, json);
+
         TaskManager.ScheduleTask(async () =>
         {
-            await DragDrop.DoDragDrop(e, data, DragDropEffects.Move | DragDropEffects.Copy);
+            await DragDrop.DoDragDropAsync(e, cdt, DragDropEffects.Move | DragDropEffects.Copy);
             OnDragOverMe?.Invoke(this, new SimpleEventArgs<MutableCharacter?, PreviewScriptCharacter?>
             {
                 Value1 = null,
