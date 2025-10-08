@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:characterImport="clr-namespace:Clockmaker0.Controls.CharacterImport"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="50"
+             x:Class="Clockmaker0.Controls.CharacterImport.OfficialCharacterPreview">
+    <Grid x:Name="ControlGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <CheckBox Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" x:Name="ImportCheckBox"/>
+        <characterImport:SimpleCharacterPreview Grid.Column="2" x:Name="SimpleCharacterPreview"/>
+    </Grid>
+</UserControl>

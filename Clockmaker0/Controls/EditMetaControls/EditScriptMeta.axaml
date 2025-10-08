@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:tabs="clr-namespace:Clockmaker0.Controls.EditMetaControls.Tabs"
+             xmlns:tabs1="clr-namespace:Clockmaker0.Controls.EditCharacterControls.Tabs"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="450"
+             x:Class="Clockmaker0.Controls.EditMetaControls.EditScriptMeta">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,10,*,10,Auto,10,*">
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Name:" FontSize="20" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <TextBox Grid.Row="0" Grid.Column="2" FontSize="20" x:Name="NameTextBox" VerticalAlignment="Center"/>
+            <TextBlock Grid.Column="4" Text="Author:" FontSize="20" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="6" FontSize="20" x:Name="AuthorTextBox" VerticalAlignment="Center"/>
+        </Grid>
+        <TabControl Grid.Row="2">
+            <TabItem Header="First Night Order">
+                <tabs1:NightOrderView x:Name="FirstNightOrderView"/>
+            </TabItem>
+            <TabItem Header="Other Night Order">
+                <tabs1:NightOrderView x:Name="OtherNightOrderView"/>
+            </TabItem>
+            <TabItem Header="Bootleg Rules">
+                <tabs:BootlegRulesTab x:Name="BootlegRulesTab"/>
+            </TabItem>
+            <TabItem Header="Custom Background">
+                <tabs:CustomBackground x:Name="CustomBackgroundTab"/>
+            </TabItem>
+            <TabItem Header="Custom Logo">
+                <tabs:CustomLogo x:Name="CustomLogoTab"/>
+            </TabItem>
+            <TabItem Header="Almanac">
+                <tabs:Almanac x:Name="AlmanacTab"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:appFeatures="clr-namespace:Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures.GenericAppFeature">
+    <StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Spacing="5">
+                <TextBlock x:Name="DescriptionTextBlock" FontSize="16" VerticalAlignment="Center"/>
+                <TextBlock x:Name="ExampleTextBlock" VerticalAlignment="Center"/>
+            </StackPanel>
+            <ComboBox Grid.Column="2" x:Name="IsEnabledComboBox">
+                <ComboBoxItem Content="Disable Feature"/>
+                <ComboBoxItem Content="Enable Feature"/>
+            </ComboBox>
+            <Button Grid.Column="4" x:Name="ExpandButton" Content="ⓘ"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Center"
+                    VerticalAlignment="Top"
+                    VerticalContentAlignment="Center"/>
+        </Grid>
+        <appFeatures:TimeScopeGrid x:Name="TimeScopeGrid" IsVisible="False"/>
+    </StackPanel>
+</UserControl>

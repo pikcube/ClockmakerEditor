@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="30"
+             Loaded="Control_OnLoaded"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.EditReminderToken">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="90"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <TextBox Grid.Column="0" x:Name="ReminderTextBox" HorizontalAlignment="Stretch"
+                 VerticalContentAlignment="Center" TextChanged="ReminderTextBox_OnTextChanged" Height="30"/>
+        <ComboBox Grid.Column="2" x:Name="IsGlobalComboBox" SelectionChanged="IsGlobalComboBox_OnSelectionChanged"
+                  SelectedIndex="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                  VerticalContentAlignment="Center" Height="30">
+            <ComboBoxItem Content="Local"/>
+            <ComboBoxItem Content="Global"/>
+        </ComboBox>
+        <Button Grid.Column="4" Content="X" x:Name="DeleteButton" Click="DeleteButton_OnClick" Height="30"/>
+    </Grid>
+</UserControl>

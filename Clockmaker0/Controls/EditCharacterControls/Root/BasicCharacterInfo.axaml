@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.Root.BasicCharacterInfo">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition MinWidth="115" Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Column="0" Grid.Row="0" Text="Name" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="0" Grid.Row="2" Text="Home Edition" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="0" Grid.Row="4" Text="Ability" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="0" Grid.Row="6" Text="Sort Type" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="0" Grid.Row="8" Text="Setup" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="0" Grid.Row="10" Text="Bag Selection" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        <TextBlock Grid.Column="0" Grid.Row="12" Text="Flavor" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+
+        <TextBox Grid.Column="2" Grid.Row="0" x:Name="CharacterNameTextBox"
+                 AcceptsReturn="False" TextChanged="CharacterNameTextBox_OnTextChanged" TextWrapping="Wrap"/>
+        <ComboBox Grid.Column="4" Grid.Row="0" x:Name="CharacterTeamComboBox"
+                  HorizontalAlignment="Stretch" SelectionChanged="CharacterTeamComboBox_OnSelectionChanged"/>
+        <TextBox Grid.Column="2"  Grid.Row="2" x:Name="EditionTextBox" TextChanged="EditionTextBox_OnTextChanged"/>
+        <Button Grid.Column="4" Grid.Row="2" x:Name="SetEditionButton" Content="This Script"
+                VerticalAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center" FontSize="13" Click="SetEditionButton_OnClick" />
+        <TextBox Grid.Column="2" Grid.ColumnSpan="3"  Grid.Row="4" x:Name="CharacterAbilityTextBox"
+                 AcceptsReturn="False" TextChanged="CharacterAbilityTextBox_OnTextChanged" TextWrapping="Wrap"/>
+        <ComboBox Grid.Column="2" Grid.ColumnSpan="3"  Grid.Row="6" x:Name="SortComboBox" SelectionChanged="SortComboBox_OnSelectionChanged" HorizontalAlignment="Stretch"/>
+        <TextBox Grid.Column="2" Grid.ColumnSpan="3"  Grid.Row="8" x:Name="SetupTextBox" TextChanged="SetupTextBox_OnTextChanged" Watermark="No Setup Ability"/>
+        <ComboBox Grid.Column="2" Grid.ColumnSpan="3" Grid.Row="10" HorizontalAlignment="Stretch"
+                  x:Name="BagOptionsComboBox">
+            <ComboBoxItem Content="Single Token (Default)"/>
+            <ComboBoxItem Content="Not Allowed in Bag"/>
+            <ComboBoxItem Content="Duplicates Allowed"/>
+        </ComboBox>
+        <TextBox Grid.Column="2" Grid.ColumnSpan="3"  Grid.Row="12" x:Name="CharacterFlavorTextBox"
+                 AcceptsReturn="False" TextChanged="CharacterFlavorTextBox_OnTextChanged" TextWrapping="Wrap"/>
+
+
+
+
+    </Grid>
+
+</UserControl>

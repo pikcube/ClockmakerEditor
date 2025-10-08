@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:appFeatures="clr-namespace:Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures.NightSignalItem">
+    <StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" x:Name="SignalTextBox"/>
+            <ComboBox Grid.Column="2" x:Name="DirectionComboBox">
+                <ComboBoxItem Content="Storyteller Card"/>
+                <ComboBoxItem Content="Player Response"/>
+            </ComboBox>
+            <Button Grid.Column="4" x:Name="ExpandButton" Content="ⓘ"/>
+        </Grid>
+        <appFeatures:TimeScopeGrid x:Name="TimeScopeGrid" IsVisible="False"/>
+        <Button x:Name="DeleteButton" Content="Delete Signal" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsVisible="False"/>
+    </StackPanel>
+</UserControl>

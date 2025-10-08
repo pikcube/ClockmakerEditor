@@ -1,0 +1,47 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:root="clr-namespace:Clockmaker0.Controls.EditCharacterControls.Root"
+             xmlns:tabs1="clr-namespace:Clockmaker0.Controls.EditCharacterControls.Tabs"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="850"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.EditCharacter">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" MinHeight="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <root:ReadOnlyLock Grid.Row="0" x:Name="ReadOnlyLock" Margin="0, 0, 0, 10"/>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <root:ImagePicker Grid.Column="0" x:Name="ImagePicker"/>
+            <root:BasicCharacterInfo Grid.Column="2" x:Name="BasicCharacterInfo"/>
+        </Grid>
+        <TabControl Grid.Row="3">
+            <TabItem Header="Reminders">
+                <tabs1:Reminders x:Name="RemindersTab"/>
+            </TabItem>
+            <TabItem Header="First Night">
+                <tabs1:FirstNightOrder x:Name="FirstNightOrderTab"/>
+            </TabItem>
+            <TabItem Header="Other Night">
+                <tabs1:OtherNightOrder x:Name="OtherNightOrderTab"/>
+            </TabItem>
+            <TabItem Header="App Features">
+                <tabs1:EditAppFeatures x:Name="AppFeaturesTab"/>
+            </TabItem>
+            <TabItem Header="Jinxes">
+                <tabs1:Jinxes x:Name="JinxesTab"/>
+            </TabItem>
+            <TabItem Header="Advanced">
+                <tabs1:Advanced x:Name="AdvancedTab"/>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

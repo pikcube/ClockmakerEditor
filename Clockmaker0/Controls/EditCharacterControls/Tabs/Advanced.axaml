@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.Advanced">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0">Warning, directly editing the json may cause instability. Proceed at your own risk.</TextBlock>
+        <TextBox Grid.Row="1" x:Name="CharacterJson" AcceptsReturn="True" AcceptsTab="True"/>
+        <Button Grid.Row="2" Content="Edit" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Center" x:Name="EditButton"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,76 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450" MinWidth="800"
+        x:Class="Clockmaker0.MainWindow"
+        Title="Clockmaker0 Beta __ver__"
+        Loaded="Control_OnLoaded"
+        Unloaded="Control_OnUnloaded"
+        Opened="MainWindow_OnOpened"
+        Closed="MainWindow_OnClosed"
+        Closing="Window_OnClosing">
+    <DockPanel>
+        <DockPanel DockPanel.Dock="Top">
+            <Menu>
+                <MenuItem Header="_File">
+                    <MenuItem Header="_New Script" Click="NewScript_OnClick" HotKey="Ctrl+N" x:Name="NewScriptMenuItem"/>
+                    <MenuItem Header="_Open Script..." Click="OpenMenuItem_OnClick" HotKey="Ctrl+O" x:Name="OpenScriptMenuItem"/>
+                    <MenuItem Header="_Save Script" Click="SaveMenuItem_OnClick" HotKey="Ctrl+S" x:Name="SaveScriptMenuItem"/>
+                    <MenuItem Header="Sa_ve Script As..." Click="SaveAsMenuItem_OnClick" HotKey="Alt+F12" x:Name="SaveScriptAsMenuItem"/>
+                    <MenuItem Header="S_ave All" Click="SaveAllMenuItem_OnClick" HotKey="Ctrl+Shift+S" x:Name="SaveAllMenuItem"/>
+                    <MenuItem Header="Pu_blish">
+                        <MenuItem Header="Host Script Using _GitHub..." Click="PublichGitHubMenuItem_OnClick"/>
+                        <MenuItem Header="Export _Zip File..." Click="ManualPublishMenuItem_OnClick"/>
+                    </MenuItem>
+                    <MenuItem Header="_Close Script" Click="CloseMenuItem_OnClick" x:Name="CloseScriptMenuItem"/>
+                    <MenuItem Header="_Exit" Click="ExitMenuItem_OnClick" HotKey="Alt+F4" x:Name="ExitMenuItem"/>
+                    <MenuItem Header="E_xit All" Click="ExitAppMenuItem_OnClick" x:Name="ExitAllMenuItem"/>
+                </MenuItem>
+                <MenuItem Header="_Add">
+                    <MenuItem Header="_New Character" x:Name="NewCharacterMenuItem">
+                        <MenuItem Header="_Townsfolk" Click="TownsfolkMenuItem_OnClick"/>
+                        <MenuItem Header="_Outsider" Click="OutsiderMenuItem_OnClick"/>
+                        <MenuItem Header="_Minion" Click="MinionMenuItem_OnClick"/>
+                        <MenuItem Header="_Demon" Click="DemonMenuItem_OnClick"/>
+                        <MenuItem Header="T_raveler" Click="TravelerMenuItem_OnClick"/>
+                        <MenuItem Header="_Fabled" Click="FabledMenuItem_OnClick"/>
+                    </MenuItem>
+                    <MenuItem Header="_Existing Character" x:Name="ExistingCharacterMenuItem" SubmenuOpened="ExistingCharacterMenuItem_OnSubmenuOpened">
+                        <MenuItem x:Name="OfficialCharacterMenuItem" Header="From _Base Game..." Click="AddOfficialCharacterMenuItem_OnClick"/>
+                        <MenuItem x:Name="FromScriptMenuItem" Header="From _Script..." Click="AddCharacterFromClockmakerFileMenuItem_OnClick"/>
+                    </MenuItem>
+                </MenuItem>
+                <MenuItem Header="_Script">
+                    <MenuItem Header="_Order By">
+                        <MenuItem Header="_Standard Order" Click="StandardOrderMenuItem_OnClick"/>
+                        <MenuItem Header="_Alphabetical Order" Click="AlphabeticalOrderMenuItem_OnClick"/>
+                    </MenuItem>
+                </MenuItem>
+                <MenuItem Header="H_elp">
+                    <MenuItem Header="C_heck For Updates" Click="CheckForUpdatesMenuItem_OnClick"/>
+
+                </MenuItem>
+            </Menu>
+        </DockPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="400"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="*" MinWidth="400"/>
+            </Grid.ColumnDefinitions>
+            <GridSplitter Grid.Column="1"
+                          ResizeDirection="Columns"/>
+            <ScrollViewer Grid.Column="0" AllowAutoHide="False">
+                <ItemsControl x:Name="CharacterSheetPanel"
+                              Margin="10,0,0,0">
+
+                </ItemsControl>
+            </ScrollViewer>
+            <ScrollViewer Grid.Column="2" AllowAutoHide="False" >
+                <StackPanel x:Name="EditPanel" Margin="0,0,10,0"/>
+            </ScrollViewer>
+
+        </Grid>
+    </DockPanel>
+</Window>

@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+             x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.EditAppFeatures">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" MinWidth="110"/>
+            <ColumnDefinition Width="10"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <GridSplitter Grid.Column="1" ResizeDirection="Columns"/>
+        <ScrollViewer Grid.Column="0" AllowAutoHide="False">
+            <ListBox SelectionChanged="SelectingItemsControl_OnSelectionChanged" SelectionMode="Single" x:Name="LoadedMenuListBox">
+                <ListBoxItem Content="General"/>
+                <ListBoxItem Content="Night Signals"/>
+                <ListBoxItem Content="Voting"/>
+                <ListBoxItem Content="Grim Reveal"/>
+            </ListBox>
+        </ScrollViewer>
+        <ScrollViewer Grid.Column="2" AllowAutoHide="False" x:Name="SettingPanel">
+            <StackPanel x:Name="LoadedMenuItemPanel"/>
+        </ScrollViewer>
+
+    </Grid>
+</UserControl>
