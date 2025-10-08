@@ -30,7 +30,7 @@ public class App : Application
     private static ConcurrentDictionary<Key, bool> KeyState { get; } = new(Enum.GetValues<Key>().Distinct().Select(k => new KeyValuePair<Key, bool>(k, false)));
     public static IEnumerable<MainWindow> Windows => OpenWindows.Keys.OfType<MainWindow>();
 
-    public static string BetaVersionNumber => "0.1.0.3";
+    public static string BetaVersionNumber => "0.1.0.4";
 
     public static void SetKeyState(Key k, bool b)
     {

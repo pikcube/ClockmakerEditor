@@ -37,128 +37,10 @@ public partial class MainWindow : Window, IDisposable
     private const string MetaReadme = "This directory contains all the script art\r\n\r\nPath: script/{property}.png";
     private const string TokenReadme = "This directory contains all the token art for each character on the script\r\n\r\nPath: token/{id}/{index}.png";
 
-    private ZipArchive ClockFile
-    {
-        get => _clockFile;
-        set
-        {
-            _clockFile.Dispose();
-            _clockFile = value;
-        }
-    }
-
-    private IStorageFile? PathToOpenFile
-    {
-        get => _pathToOpenFile;
-        set
-        {
-            _pathToOpenFile = value;
-            if (_pathToOpenFile is not null)
-            {
-                DefaultFolder = _pathToOpenFile.GetParentAsync();
-            }
-
-        }
-    }
-
     private int ImageVersion { get; set; } = -1;
-
-    private MutableBotcScript? LoadedScript
-    {
-        get => _loadedScript;
-        set
-        {
-            if (_loadedScript != null)
-            {
-                _loadedScript.Characters.OrderChanged -= Characters_OrderChanged;
-            }
-
-            _loadedScript = value;
-
-            if (_loadedScript != null)
-            {
-                _loadedScript.Characters.OrderChanged += Characters_OrderChanged;
-            }
-        }
-    }
-
-    private void Characters_OrderChanged(object? sender, ValueChangedArgs<TrackedList<MutableCharacter>> e)
-    {
-        if (ImageLoader is null || LoadedScript is null)
-        {
-            return;
-        }
-
-        e.NewValue.OrderChanged -= Characters_OrderChanged;
-        e.NewValue.SortBy(c => c.Team).SaveToTrackedList();
-        e.NewValue.OrderChanged += Characters_OrderChanged;
-
-
-        ScriptTitle title = CharacterSheetPanel.Items.OfType<ScriptTitle>().Single();
-        PreviewScriptCharacter[] characters = [.. e.NewValue.Select(mc =>
-            CharacterSheetPanel.Items.OfType<PreviewScriptCharacter>().SingleOrDefault(psc => psc.LoadedCharacter == mc) ??
-            CreateNewPreviewScriptCharacter(mc, ImageLoader, LoadedScript))];
-
-        foreach (PreviewScriptCharacter psc in CharacterSheetPanel.Items.OfType<PreviewScriptCharacter>()
-                     .Where(psc => !characters.Contains(psc)))
-        {
-            psc.Delete();
-        }
-
-        UserControl[] items = [title, .. characters];
-
-        CharacterSheetPanel.ItemsSource = items;
-    }
-
-    private PreviewScriptCharacter CreateNewPreviewScriptCharacter(MutableCharacter mc, ScriptImageLoader imageLoader, MutableBotcScript loadedScript)
-    {
-        PreviewScriptCharacter psc = new PreviewScriptCharacter().Load(mc, imageLoader, loadedScript);
-        psc.OnLoadMoreInfo += Psc_OnLoadMoreInfo;
-        psc.OnDeleteCharacterClicked += PscOnDeleteCharacterClicked;
-        psc.OnUnloadMoreInfoWindow += Psc_OnUnloadMoreInfoWindow;
-        psc.OnPopOutMoreInfo += Psc_OnPopOutMoreInfo;
-        psc.OnDragOverMe += Psc_OnDragOverMe;
-        psc.OnAddCharacter += Psc_OnAddCharacter;
-
-        return psc;
-    }
-
-    private void Psc_OnAddCharacter(object? sender, SimpleEventArgs<MutableCharacter> e)
-    {
-        AddCharacterToScript(e.Value);
-    }
-
-    private void Psc_OnDragOverMe(object? sender, SimpleEventArgs<MutableCharacter?, PreviewScriptCharacter?> e)
-    {
-        DragOverPreview(e.Value1, e.Value2);
-    }
-
-    private void Psc_OnPopOutMoreInfo(object? sender, SimpleEventArgs<UserControl, string> e)
-    {
-        PopAction(e.Value1, e.Value2);
-    }
-
-    private void Psc_OnUnloadMoreInfoWindow(object? sender, SimpleEventArgs<UserControl> e)
-    {
-        EditPanel.Children.Remove(e.Value);
-    }
-
-    private void PscOnDeleteCharacterClicked(object? sender, SimpleEventArgs<MutableCharacter> e)
-    {
-        RemoveCharacterFromScript(e.Value);
-    }
-
-    private void Psc_OnLoadMoreInfo(object? sender, SimpleEventArgs<UserControl> e)
-    {
-        LoadEditControl(e.Value);
-    }
-
     private Task<IStorageFolder?> DefaultFolder { get; set; }
-
     private ScriptImageLoader? ImageLoader { get; set; }
-
     private List<PopOutWindow> PopOutWindows { get; } = [];
-
 
     public static MainWindow Create(Task<IStorageFolder?>? defaultFolder = null)
     {
@@ -199,6 +81,51 @@ public partial class MainWindow : Window, IDisposable
         ExistingCharacterMenuItem.ItemsSource = (MenuItem[])[OfficialCharacterMenuItem, FromScriptMenuItem];
 
         Title = $"Clockmaker Beta {App.BetaVersionNumber}";
+    }
+
+
+
+    private ZipArchive ClockFile
+    {
+        get => _clockFile;
+        set
+        {
+            _clockFile.Dispose();
+            _clockFile = value;
+        }
+    }
+
+    private IStorageFile? PathToOpenFile
+    {
+        get => _pathToOpenFile;
+        set
+        {
+            _pathToOpenFile = value;
+            if (_pathToOpenFile is not null)
+            {
+                DefaultFolder = _pathToOpenFile.GetParentAsync();
+            }
+
+        }
+    }
+
+    private MutableBotcScript? LoadedScript
+    {
+        get => _loadedScript;
+        set
+        {
+            if (_loadedScript != null)
+            {
+                _loadedScript.Characters.OrderChanged -= Characters_OrderChanged;
+            }
+
+            _loadedScript = value;
+
+            if (_loadedScript != null)
+            {
+                _loadedScript.Characters.OrderChanged += Characters_OrderChanged;
+            }
+        }
     }
 
     private void Drop(object? sender, DragEventArgs e)
@@ -543,31 +470,6 @@ public partial class MainWindow : Window, IDisposable
         TaskManager.ScheduleAsyncTask(async () => await InitializeImages(LoadedScript, ImageLoader));
     }
 
-    private void Meta_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        Title = $"{LoadedScript?.Meta.Name ?? "New Script"} - Clockmaker Beta {App.BetaVersionNumber}";
-    }
-
-    private void ScriptTitle_OnAddCharacter(object? sender, SimpleEventArgs<UserControl> e)
-    {
-        AddNewCharacter(TeamEnum.Townsfolk);
-    }
-
-    private void ScriptTitle_OnDelete(object? sender, SimpleEventArgs<MutableCharacter> e)
-    {
-        RemoveCharacterFromScript(e.Value);
-    }
-
-    private void ScriptTitle_OnPop(object? sender, SimpleEventArgs<UserControl, string> e)
-    {
-        PopAction(e.Value1, e.Value2);
-    }
-
-    private void ScriptTitle_OnLoadEdit(object? sender, SimpleEventArgs<UserControl> e)
-    {
-        LoadEditControl(e.Value);
-    }
-
     private static async Task InitializeImages(MutableBotcScript loadedScript, ScriptImageLoader loader)
     {
         foreach (MutableCharacter character in loadedScript.Characters)
@@ -744,6 +646,16 @@ public partial class MainWindow : Window, IDisposable
         ExistingCharacterMenuItem.IsEnabled = isEnabled;
     }
 
+    private void PopAction(UserControl control, string name)
+    {
+        PopOutWindow popOutWindow = new(control, name);
+        EditPanel.Children.Remove(control);
+        popOutWindow.Width = Width / 2;
+        popOutWindow.Show();
+        PopOutWindows.Add(popOutWindow);
+        popOutWindow.Closed += PopOutWindow_Closed;
+    }
+
     private void AddNewCharacter(TeamEnum team)
     {
         while (LoadedScript is null)
@@ -829,14 +741,70 @@ public partial class MainWindow : Window, IDisposable
         return previewScriptCharacter;
     }
 
-    private void PopAction(UserControl control, string name)
+
+    private async Task AddCharacterFromOpenClockmakerScript(MainWindow newWindow)
     {
-        PopOutWindow popOutWindow = new(control, name);
-        EditPanel.Children.Remove(control);
-        popOutWindow.Width = Width / 2;
-        popOutWindow.Show();
-        PopOutWindows.Add(popOutWindow);
-        popOutWindow.Closed += PopOutWindow_Closed;
+        if (newWindow.ImageLoader is null)
+        {
+            return;
+        }
+
+        if (newWindow.LoadedScript is null)
+        {
+            return;
+        }
+
+        if (LoadedScript is null)
+        {
+            return;
+        }
+
+        if (ImageLoader is null)
+        {
+            return;
+        }
+
+        BotcScript loadedScript = newWindow.LoadedScript;
+
+        IEnumerable<Character> loadedScriptCharacters = loadedScript.Characters.Where(loadedCharacter => LoadedScript.Characters.All(c => c.Id != loadedCharacter.Id));
+
+        OfficialCharacterImport oci = new()
+        {
+            Width = Width / 4,
+            Height = Height / 2,
+        };
+
+        oci.Load(newWindow.ImageLoader, loadedScriptCharacters);
+        await oci.ShowDialog(this);
+        if (!oci.IsConfirmed)
+        {
+            return;
+        }
+
+        foreach (Character c in oci.ImportedCharacters.OfType<Character>())
+        {
+            if (LoadedScript.Characters.Any(lc => lc.Id == c.Id))
+            {
+                continue;
+            }
+
+            MutableCharacter mc = c.AsMutable();
+
+            if (!ScriptParse.IsOfficial(c.Id))
+            {
+                for (int index = 0; index < c.Image.Length; index++)
+                {
+                    await ImageLoader.TrySetImageAsync(mc, index, async target =>
+                    {
+                        Bitmap img = await newWindow.ImageLoader.GetImageAsync(c, index);
+                        img.Save(target);
+                    }, MagickFormat.Png);
+                }
+            }
+
+            _ = AddCharacterToScript(mc);
+            LoadedScript.Jinxes.AddRange(c.Jinxes.Select(j => new MutableJinx(j.Reason, c.Id, j.Id)));
+        }
     }
 
     private void RemoveCharacterFromScript(MutableCharacter character)
@@ -907,6 +875,8 @@ public partial class MainWindow : Window, IDisposable
 
         Close();
     }
+
+    //Begin Event Hooks
 
     private void Control_OnLoaded(object? sender, RoutedEventArgs e)
     {
@@ -1125,71 +1095,6 @@ public partial class MainWindow : Window, IDisposable
         });
     }
 
-    private async Task AddCharacterFromOpenClockmakerScript(MainWindow newWindow)
-    {
-        if (newWindow.ImageLoader is null)
-        {
-            return;
-        }
-
-        if (newWindow.LoadedScript is null)
-        {
-            return;
-        }
-
-        if (LoadedScript is null)
-        {
-            return;
-        }
-
-        if (ImageLoader is null)
-        {
-            return;
-        }
-
-        BotcScript loadedScript = newWindow.LoadedScript;
-
-        IEnumerable<Character> loadedScriptCharacters = loadedScript.Characters.Where(loadedCharacter => LoadedScript.Characters.All(c => c.Id != loadedCharacter.Id));
-
-        OfficialCharacterImport oci = new()
-        {
-            Width = Width / 4,
-            Height = Height / 2,
-        };
-
-        oci.Load(newWindow.ImageLoader, loadedScriptCharacters);
-        await oci.ShowDialog(this);
-        if (!oci.IsConfirmed)
-        {
-            return;
-        }
-
-        foreach (Character c in oci.ImportedCharacters.OfType<Character>())
-        {
-            if (LoadedScript.Characters.Any(lc => lc.Id == c.Id))
-            {
-                continue;
-            }
-
-            MutableCharacter mc = c.AsMutable();
-
-            if (!ScriptParse.IsOfficial(c.Id))
-            {
-                for (int index = 0; index < c.Image.Length; index++)
-                {
-                    await ImageLoader.TrySetImageAsync(mc, index, async target =>
-                    {
-                        Bitmap img = await newWindow.ImageLoader.GetImageAsync(c, index);
-                        img.Save(target);
-                    }, MagickFormat.Png);
-                }
-            }
-
-            _ = AddCharacterToScript(mc);
-            LoadedScript.Jinxes.AddRange(c.Jinxes.Select(j => new MutableJinx(j.Reason, c.Id, j.Id)));
-        }
-    }
-
     private void CloseMenuItem_OnClick(object? sender, RoutedEventArgs e)
     {
         TaskManager.ScheduleTask(async () =>
@@ -1221,6 +1126,8 @@ public partial class MainWindow : Window, IDisposable
         }
 
         PrepareToSave();
+
+        //Note that this control is excluded from the public repository
         PublishScript publish = new(LoadedScript, ClockFile, PathToOpenFile);
         publish.ShowDialog(this);
     }
@@ -1312,6 +1219,102 @@ public partial class MainWindow : Window, IDisposable
         ExistingCharacterMenuItem.ItemsSource = items;
     }
 
+    private void Characters_OrderChanged(object? sender, ValueChangedArgs<TrackedList<MutableCharacter>> e)
+    {
+        if (ImageLoader is null || LoadedScript is null)
+        {
+            return;
+        }
+
+        e.NewValue.OrderChanged -= Characters_OrderChanged;
+        e.NewValue.SortBy(c => c.Team).SaveToTrackedList();
+        e.NewValue.OrderChanged += Characters_OrderChanged;
+
+
+        ScriptTitle title = CharacterSheetPanel.Items.OfType<ScriptTitle>().Single();
+        PreviewScriptCharacter[] characters = [.. e.NewValue.Select(mc =>
+            CharacterSheetPanel.Items.OfType<PreviewScriptCharacter>().SingleOrDefault(psc => psc.LoadedCharacter == mc) ??
+            CreateNewPreviewScriptCharacter(mc, ImageLoader, LoadedScript))];
+
+        foreach (PreviewScriptCharacter psc in CharacterSheetPanel.Items.OfType<PreviewScriptCharacter>()
+                     .Where(psc => !characters.Contains(psc)))
+        {
+            psc.Delete();
+        }
+
+        UserControl[] items = [title, .. characters];
+
+        CharacterSheetPanel.ItemsSource = items;
+    }
+
+    private PreviewScriptCharacter CreateNewPreviewScriptCharacter(MutableCharacter mc, ScriptImageLoader imageLoader, MutableBotcScript loadedScript)
+    {
+        PreviewScriptCharacter psc = new PreviewScriptCharacter().Load(mc, imageLoader, loadedScript);
+        psc.OnLoadMoreInfo += Psc_OnLoadMoreInfo;
+        psc.OnDeleteCharacterClicked += PscOnDeleteCharacterClicked;
+        psc.OnUnloadMoreInfoWindow += Psc_OnUnloadMoreInfoWindow;
+        psc.OnPopOutMoreInfo += Psc_OnPopOutMoreInfo;
+        psc.OnDragOverMe += Psc_OnDragOverMe;
+        psc.OnAddCharacter += Psc_OnAddCharacter;
+
+        return psc;
+    }
+
+    private void Psc_OnAddCharacter(object? sender, SimpleEventArgs<MutableCharacter> e)
+    {
+        AddCharacterToScript(e.Value);
+    }
+
+    private void Psc_OnDragOverMe(object? sender, SimpleEventArgs<MutableCharacter?, PreviewScriptCharacter?> e)
+    {
+        DragOverPreview(e.Value1, e.Value2);
+    }
+
+    private void Psc_OnPopOutMoreInfo(object? sender, SimpleEventArgs<UserControl, string> e)
+    {
+        PopAction(e.Value1, e.Value2);
+    }
+
+    private void Psc_OnUnloadMoreInfoWindow(object? sender, SimpleEventArgs<UserControl> e)
+    {
+        EditPanel.Children.Remove(e.Value);
+    }
+
+    private void PscOnDeleteCharacterClicked(object? sender, SimpleEventArgs<MutableCharacter> e)
+    {
+        RemoveCharacterFromScript(e.Value);
+    }
+
+    private void Psc_OnLoadMoreInfo(object? sender, SimpleEventArgs<UserControl> e)
+    {
+        LoadEditControl(e.Value);
+    }
+    private void Meta_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        Title = $"{LoadedScript?.Meta.Name ?? "New Script"} - Clockmaker Beta {App.BetaVersionNumber}";
+    }
+
+    private void ScriptTitle_OnAddCharacter(object? sender, SimpleEventArgs<UserControl> e)
+    {
+        AddNewCharacter(TeamEnum.Townsfolk);
+    }
+
+    private void ScriptTitle_OnDelete(object? sender, SimpleEventArgs<MutableCharacter> e)
+    {
+        RemoveCharacterFromScript(e.Value);
+    }
+
+    private void ScriptTitle_OnPop(object? sender, SimpleEventArgs<UserControl, string> e)
+    {
+        PopAction(e.Value1, e.Value2);
+    }
+
+    private void ScriptTitle_OnLoadEdit(object? sender, SimpleEventArgs<UserControl> e)
+    {
+        LoadEditControl(e.Value);
+    }
+
+
     private void CheckForUpdatesMenuItem_OnClick(object? sender, RoutedEventArgs e)
     {
         TaskManager.ScheduleAsyncTask(async () =>
@@ -1353,11 +1356,7 @@ public partial class MainWindow : Window, IDisposable
 
             string path = Path.Join(appdata, "setup.exe");
             await File.WriteAllBytesAsync(path, bytes);
-            IStorageFile? file = await StorageProvider.TryGetFileFromPathAsync(path);
-            if (file is null)
-            {
-                throw new NoNullAllowedException("file can't be null");
-            }
+            IStorageFile? file = await StorageProvider.TryGetFileFromPathAsync(path) ?? throw new NoNullAllowedException("file can't be null");
             await Launcher.LaunchFileAsync(file);
             App.Desktop?.Shutdown(0);
         });

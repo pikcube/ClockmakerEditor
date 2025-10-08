@@ -133,21 +133,30 @@ public partial class NightOrderView : UserControl
             return;
         }
 
-        DataObject data = new();
-        data.Set("obj", sender ?? "");
-        data.Set("character", character ?? throw new NoNullAllowedException());
-        data.Set("list", list);
-        data.Set(DataFormats.Text, JsonConvert.SerializeObject(character.ToImmutable(LoadedScript.Jinxes), Formatting.Indented));
+        if (sender is not NightOrderPreview nop)
+        {
+            return;
+        }
+
+        CustomDataTransfer<NightOrderDrag> cdt = new(new NightOrderDrag(nop, character, list), JsonConvert.SerializeObject(character.ToImmutable(LoadedScript.Jinxes), Formatting.Indented));
+
         TaskManager.ScheduleAsyncTask(async () =>
         {
-            await DragDrop.DoDragDrop(e, data, DragDropEffects.Move);
+            await DragDrop.DoDragDropAsync(e, cdt, DragDropEffects.Move);
             DragOverMe(null, null);
         });
     }
 
     private void OnDragOver(DragEventArgs e, MutableCharacter owner, TrackedList<MutableCharacter> nightOrder)
     {
-        if (e.Data.Get("character") is not MutableCharacter || e.Data.Get("list") is not TrackedList<MutableCharacter> list || list != nightOrder)
+        if (e.DataTransfer is not CustomDataTransfer<NightOrderDrag> cdt)
+        {
+            return;
+        }
+
+        NightOrderDrag data = cdt.Value;
+
+        if (data.List != nightOrder)
         {
             DragOverMe(null, null);
             return;
@@ -155,7 +164,7 @@ public partial class NightOrderView : UserControl
 
         e.DragEffects = DragDropEffects.Move;
 
-        DragOverMe(owner, e.Data.Get("obj") as NightOrderPreview);
+        DragOverMe(owner, data.Preview);
 
     }
 
@@ -196,17 +205,20 @@ public partial class NightOrderView : UserControl
 
     private static void OnDrop(DragEventArgs e, MutableCharacter owner, TrackedList<MutableCharacter> nightOrder)
     {
-        if (e.Data.Get("character") is not MutableCharacter droppedCharacter || droppedCharacter == owner)
+        if (e.DataTransfer is not CustomDataTransfer<NightOrderDrag> cdt)
         {
             return;
         }
 
-        if (e.Data.Get("list") is not TrackedList<MutableCharacter> list || list != nightOrder)
+
+        NightOrderDrag data = cdt.Value;
+
+        if (data.LoadedCharacter == owner || data.List != nightOrder)
         {
             return;
         }
 
-        list.MoveTo(droppedCharacter, owner);
+        data.List.MoveTo(data.LoadedCharacter, owner);
         e.Handled = true;
     }
 }
