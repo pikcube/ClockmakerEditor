@@ -1,11 +1,6 @@
 ﻿using Clockmaker0.Controls.CharacterPreview;
 using Pikcube.ReadWriteScript.Core;
 using Pikcube.ReadWriteScript.Core.Mutable;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Clockmaker0.Data;
 

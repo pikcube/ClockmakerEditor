@@ -3,8 +3,6 @@ using NeoSmart.SecureStore;
 using Newtonsoft.Json;
 using System;
 using System.IO;
-using System.Xml.Linq;
-using Octokit;
 
 namespace Clockmaker0;
 

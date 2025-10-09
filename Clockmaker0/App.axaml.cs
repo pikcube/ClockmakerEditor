@@ -5,7 +5,6 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
 using Clockmaker0.Data;
@@ -30,7 +29,7 @@ public class App : Application
     private static ConcurrentDictionary<Key, bool> KeyState { get; } = new(Enum.GetValues<Key>().Distinct().Select(k => new KeyValuePair<Key, bool>(k, false)));
     public static IEnumerable<MainWindow> Windows => OpenWindows.Keys.OfType<MainWindow>();
 
-    public static string BetaVersionNumber => "0.1.0.4";
+    public static string BetaVersionNumber => "0.1.0.5";
 
     public static void SetKeyState(Key k, bool b)
     {

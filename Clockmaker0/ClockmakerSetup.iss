@@ -4,7 +4,7 @@
 #include "CodeDependencies.iss"
 
 #define MyAppName "Clockmaker Beta"
-#define MyAppVersion "0.1.0.3"
+#define MyAppVersion "0.1.0.5"
 #define MyAppPublisher "Pikcube"
 #define MyAppURL "https://clockmaker.pikcube.com/beta/"
 #define MyAppExeName "Clockmaker0.exe"
