@@ -1,13 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Data;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -26,9 +16,23 @@ using Newtonsoft.Json;
 using Pikcube.ReadWriteScript.Core;
 using Pikcube.ReadWriteScript.Core.Mutable;
 using Pikcube.ReadWriteScript.Offline;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Data;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Clockmaker0.Printing;
 
 namespace Clockmaker0;
 
+/// <summary>
+/// Control which loads in a script for editing and handles the logic of modifying the underlying Clockmaker File. (I really should have put more of this into its own class but too late now)
+/// </summary>
 public partial class MainWindow : Window, IDisposable
 {
     private ZipArchive _clockFile = new(new MemoryStream(), ZipArchiveMode.Update);
@@ -41,50 +45,7 @@ public partial class MainWindow : Window, IDisposable
     private Task<IStorageFolder?> DefaultFolder { get; set; }
     private ScriptImageLoader? ImageLoader { get; set; }
     private List<PopOutWindow> PopOutWindows { get; } = [];
-
-    public static MainWindow Create(Task<IStorageFolder?>? defaultFolder = null)
-    {
-        MainWindow mw = new();
-        mw.DefaultFolder = defaultFolder ?? mw.DefaultFolder;
-        mw.NewScript();
-        return mw;
-    }
-
-    public static async Task<MainWindow> CreateAsync(IStorageFile clockmakerFile)
-    {
-        MainWindow mw = new();
-        await mw.LoadScriptFileAsync(clockmakerFile);
-        return mw;
-    }
-
-    public static async Task<MainWindow> CreateAsync(string[] paths)
-    {
-        if (paths.Length == 0)
-        {
-            return Create();
-        }
-
-        MainWindow mw = new();
-        await mw.LoadFiles(paths);
-        return mw;
-    }
-
-    [UsedImplicitly]
-    public MainWindow()
-    {
-        InitializeComponent();
-        DefaultFolder = StorageProvider.TryGetWellKnownFolderAsync(WellKnownFolder.Documents);
-
-        CharacterSheetPanel.AddHandler(DragDrop.DragOverEvent, DragOver);
-        CharacterSheetPanel.AddHandler(DragDrop.DropEvent, Drop);
-        ExistingCharacterMenuItem.Items.Clear();
-        ExistingCharacterMenuItem.ItemsSource = (MenuItem[])[OfficialCharacterMenuItem, FromScriptMenuItem];
-
-        Title = $"Clockmaker Beta {App.BetaVersionNumber}";
-    }
-
-
-
+    private List<IStorageFile> RecentlyOpenedFiles { get; } = [];
     private ZipArchive ClockFile
     {
         get => _clockFile;
@@ -126,6 +87,165 @@ public partial class MainWindow : Window, IDisposable
                 _loadedScript.Characters.OrderChanged += Characters_OrderChanged;
             }
         }
+    }
+
+
+    /// <inheritdoc />
+    [UsedImplicitly]
+    public MainWindow()
+    {
+        InitializeComponent();
+        DefaultFolder = StorageProvider.TryGetWellKnownFolderAsync(WellKnownFolder.Documents);
+
+        CharacterSheetPanel.AddHandler(DragDrop.DragOverEvent, DragOver);
+        CharacterSheetPanel.AddHandler(DragDrop.DropEvent, Drop);
+        ExistingCharacterMenuItem.Items.Clear();
+        ExistingCharacterMenuItem.ItemsSource = (MenuItem[])[OfficialCharacterMenuItem, FromScriptMenuItem];
+
+        Title = $"Clockmaker Beta {App.BetaVersionNumber}";
+    }
+
+    /// <summary>
+    /// Create a MainWindow object
+    /// </summary>
+    /// <param name="defaultFolder">Optional, a task which returns a default folder for opening and closing files</param>
+    /// <returns>The MainWindow control</returns>
+    public static MainWindow Create(Task<IStorageFolder?>? defaultFolder = null)
+    {
+        MainWindow mw = new();
+        mw.DefaultFolder = defaultFolder ?? mw.DefaultFolder;
+        mw.NewScript();
+        return mw;
+    }
+
+    /// <summary>
+    /// Create a MainWindow control and async load each of the provided scripts. If multiple scripts are provided, they will open in separate windows
+    /// </summary>
+    /// <param name="paths">The scripts top open</param>
+    /// <returns>The window (unloaded)</returns>
+    [UsedImplicitly]
+    public static async Task<MainWindow> CreateAndShowAsync(params IStorageFile[] paths)
+    {
+        if (paths.Length == 0)
+        {
+            return Create();
+        }
+
+        MainWindow mw = new();
+        await mw.LoadFilesAsync(paths);
+        return mw;
+    }
+
+
+    //Internal because external libraries should prefer CreateAsync so the Storage Provider can safely validate the args for them
+    internal static async Task OpenScriptsAsync(string[] desktopArgs)
+    {
+        if (desktopArgs.Length == 0)
+        {
+            Create().Show();
+            return;
+        }
+
+        MainWindow mw = App.OldestMainWindow ?? new MainWindow();
+
+        IStorageProvider provider = mw.StorageProvider;
+
+        foreach (string path in desktopArgs)
+        {
+            IStorageFile? file = await provider.TryGetFileFromPathAsync(path);
+            if (file is null)
+            {
+                //Flag Check
+                switch (path.ToLower())
+                {
+                    //Help Flag
+                    case "-h":
+                    case "--help":
+                    case "/?":
+                        Console.WriteLine("Usage: clockmaker path/file.clockmaker");
+                        continue;
+                    //Bad script, please ignore
+                    case "--puppets":
+                        await CreateAndShowPuppetsAsync();
+                        continue;
+                    //She skewers you
+                    case "--wife":
+                        CreateAndShowWife();
+                        continue;
+                    //Find someone who looks at you the way...
+                    case "--patters":
+                        CreateWithGoonAndShow();
+                        continue;
+                    //File Not Found
+                    default:
+                        continue;
+                }
+            }
+
+            await mw.LoadFileAndShowAsync(file);
+        }
+
+    }
+
+    private static void CreateWithGoonAndShow()
+    {
+        MainWindow w = Create();
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["goon"]);
+        w.Show();
+    }
+
+    private static void CreateAndShowWife()
+    {
+        MainWindow w = Create();
+        MutableBotcScript script = w.LoadedScript ?? throw new NoNullAllowedException();
+        MutableMeta meta = script.Meta;
+        meta.Name = "She Skewers You";
+        meta.Author = "The Razor";
+        w.AddCharacterToScript(CreateRazor(1, TeamEnum.Townsfolk));
+        w.AddCharacterToScript(CreateRazor(2, TeamEnum.Townsfolk));
+        w.AddCharacterToScript(CreateRazor(3, TeamEnum.Townsfolk));
+        w.AddCharacterToScript(CreateRazor(4, TeamEnum.Townsfolk));
+        w.AddCharacterToScript(CreateRazor(5, TeamEnum.Townsfolk));
+        w.AddCharacterToScript(CreateRazor(6, TeamEnum.Townsfolk));
+        w.AddCharacterToScript(CreateRazor(7, TeamEnum.Outsider));
+        w.AddCharacterToScript(CreateRazor(8, TeamEnum.Outsider));
+        w.AddCharacterToScript(CreateRazor(9, TeamEnum.Minion));
+        w.AddCharacterToScript(CreateRazor(10, TeamEnum.Minion));
+        w.AddCharacterToScript(CreateRazor(11, TeamEnum.Demon));
+        w.AddCharacterToScript(CreateRazor(12, TeamEnum.Demon));
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["bootlegger"]);
+        meta.Bootlegger.Add(new BootlegRule("She skewers you"));
+        w.Show();
+    }
+
+    private static Character CreateRazor(int index, TeamEnum team) => new() { Id = $"razor{index}", Edition = "", Name = "The Razor", Ability = "She Skewers You", Team = team, };
+
+    private static async Task CreateAndShowPuppetsAsync()
+    {
+        MainWindow w = Create();
+        MutableBotcScript script = w.LoadedScript ?? throw new NoNullAllowedException();
+        MutableMeta meta = script.Meta;
+        meta.Name = "Puppets";
+        meta.Author = "Pikcube";
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["steward"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["shugenja"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["snakecharmer"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["fisherman"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["soldier"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["banshee"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["lunatic"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["drunk"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["marionette"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["lordoftyphon"]);
+        w.AddCharacterToScript(ScriptParse.GetOfficialCharacters["sentinel"]);
+        ScriptImageLoader scriptImageLoader = w.ImageLoader ?? throw new NoNullAllowedException();
+        await scriptImageLoader.ForkAsync(script.Characters.Single(c => c.Id == "marionette"), script, "twoMarionette");
+        MutableCharacter marionette = script.Characters.Single(c => c.Id == "twoMarionette");
+        marionette.MutableAppFeatures.Selection = SelectionRule.Duplicates;
+        meta.Bootlegger.Add(new BootlegRule("All minions are Marionette"));
+        meta.Bootlegger.Add(new BootlegRule("If the demon moves, so do the Marionettes"));
+        meta.Bootlegger.Add(new BootlegRule("Before creating a bag, remove all characters, change scripts, and play something else"));
+        w.Show();
     }
 
     private void Drop(object? sender, DragEventArgs e)
@@ -192,37 +312,38 @@ public partial class MainWindow : Window, IDisposable
         }
     }
 
-    private async Task LoadFiles(string[] paths)
+    private async Task LoadFilesAsync(IStorageFile[] paths)
     {
-        foreach (string arg in paths)
+        foreach (IStorageFile file in paths)
         {
-            IStorageFile? file = await StorageProvider.TryGetFileFromPathAsync(arg);
-            if (file is null)
-            {
-                continue;
-            }
-
-            await using Stream s = await file.OpenReadAsync();
-
-            if (!IsZipFile(s))
-            {
-                continue;
-            }
-
-            if (ImageVersion == -1)
-            {
-                PathToOpenFile?.Dispose();
-                PathToOpenFile = file;
-                ClockFile?.Dispose();
-
-                await LoadScriptFileAsync(file);
-            }
-            else
-            {
-                (await CreateAsync(file)).Show();
-            }
+            await LoadFileAndShowAsync(file);
         }
     }
+
+    private async Task LoadFileAndShowAsync(IStorageFile file)
+    {
+        await using Stream s = await file.OpenReadAsync();
+
+        if (!IsZipFile(s))
+        {
+            return;
+        }
+
+        if (ImageVersion == -1)
+        {
+            PathToOpenFile?.Dispose();
+            PathToOpenFile = file;
+            ClockFile.Dispose();
+
+            await LoadScriptFileAsync(file);
+            Show();
+        }
+        else
+        {
+            await CreateAndShowAsync(file);
+        }
+    }
+
     private static bool IsInterruptClose(MutableBotcScript? loadedScript, ScriptImageLoader? imageLoader, IStorageFile? pathToOpenFile, int imageVersion)
     {
         if (loadedScript is null || imageLoader is null)
@@ -235,7 +356,7 @@ public partial class MainWindow : Window, IDisposable
     }
 
 
-    public async Task<bool> IsCancelCloseAsync()
+    private async Task<bool> IsCancelCloseAsync()
     {
         if (!IsInterruptClose(LoadedScript, ImageLoader, PathToOpenFile, ImageVersion))
         {
@@ -249,7 +370,7 @@ public partial class MainWindow : Window, IDisposable
 
         ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Save File Before Closing?",
             $"Would you like to save {LoadedScript.Meta.Name} before closing?",
-            ButtonEnum.YesNoCancel).ShowWindowDialogAsync(App.MainWindow);
+            ButtonEnum.YesNoCancel).ShowWindowDialogAsync(this);
 
         return result switch
         {
@@ -259,6 +380,9 @@ public partial class MainWindow : Window, IDisposable
         };
     }
 
+    /// <summary>
+    /// Dispose of the MainWindow and underlying script file
+    /// </summary>
     public void Dispose()
     {
         _clockFile.Dispose();
@@ -269,6 +393,7 @@ public partial class MainWindow : Window, IDisposable
     private void LoadEditControl(UserControl control)
     {
         EditPanel.Children.Clear();
+
         EditPanel.Children.Add(control);
     }
 
@@ -319,6 +444,7 @@ public partial class MainWindow : Window, IDisposable
                 using StreamReader reader = new(almanacStream);
                 almanac = await reader.ReadToEndAsync();
             }
+            App.DataStore.RecentlyOpenedFiles.Add(script.Path.LocalPath);
         }
 
         else
@@ -354,7 +480,7 @@ public partial class MainWindow : Window, IDisposable
         await data.CopyToAsync(ms);
 
         ms.Position = 0;
-        ZipArchive clockFile = new(ms, ZipArchiveMode.Update, false);
+        ZipArchive clockFile = new(ms, ZipArchiveMode.Update);
 
         ZipArchiveEntry entry = clockFile.GetEntry("script.json") ?? throw new NoNullAllowedException();
         await using Stream file = entry.Open();
@@ -419,6 +545,8 @@ public partial class MainWindow : Window, IDisposable
         yield return "script.json";
         yield return "token/readme.txt";
         yield return "script/readme.txt";
+        yield return "almanac.md";
+        yield return "clockmaker.version";
     }
 
     private void InitializeScript(MutableBotcScript loadedScript, string almanac)
@@ -489,7 +617,7 @@ public partial class MainWindow : Window, IDisposable
         ClockFile = new ZipArchive(new MemoryStream(), ZipArchiveMode.Update);
         PathToOpenFile?.Dispose();
         PathToOpenFile = null;
-        InitializeScript(new MutableBotcScript(new BotcScript(new Meta { Name = "" }, []), ScriptParse.GetOfficialCharacters), "");
+        InitializeScript(new MutableBotcScript(new BotcScript(new Meta { Name = "" }, []), ScriptParse.Base), "");
     }
 
     private async Task OpenAsync()
@@ -511,7 +639,7 @@ public partial class MainWindow : Window, IDisposable
         }
         else
         {
-            (await CreateAsync(file)).Show();
+            await CreateAndShowAsync(file);
         }
     }
 
@@ -592,6 +720,7 @@ public partial class MainWindow : Window, IDisposable
         }
 
         ImageVersion = ImageLoader?.Version ?? -1;
+        App.DataStore.RecentlyOpenedFiles.Add(file.Path.LocalPath);
 
         return true;
     }
@@ -642,19 +771,40 @@ public partial class MainWindow : Window, IDisposable
         SaveScriptMenuItem.IsEnabled = isEnabled;
         SaveScriptAsMenuItem.IsEnabled = isEnabled;
         NewCharacterMenuItem.IsEnabled = isEnabled;
+        PublishMenuItem.IsEnabled = isEnabled;
 
         ExistingCharacterMenuItem.IsEnabled = isEnabled;
     }
 
-    private void PopAction(UserControl control, string name)
+    private void PopAction(INamedControl<Control> namedControl)
     {
-        PopOutWindow popOutWindow = new(control, name);
+        PopAction(namedControl.Control, new PopOutWindow(namedControl));
+    }
+
+    private void PopAction(Control control, string name)
+    {
+        PopAction(control, new PopOutWindow(control, name));
+    }
+
+    private void PopAction(Control control, PopOutWindow popOutWindow)
+    {
         EditPanel.Children.Remove(control);
-        popOutWindow.Width = Width / 2;
+
+        popOutWindow.Width = App.DataStore.ColumnCount switch
+        {
+            0 when Width < 1200 => Width,
+            0 when EditPanel.Children.Count > 0 => MainGridView.ColumnDefinitions[2].ActualWidth,
+            0 => Width / 2,
+            1 => Width,
+            _ => MainGridView.ColumnDefinitions[2].ActualWidth
+        };
+
         popOutWindow.Show();
         PopOutWindows.Add(popOutWindow);
         popOutWindow.Closed += PopOutWindow_Closed;
     }
+
+
 
     private void AddNewCharacter(TeamEnum team)
     {
@@ -709,9 +859,9 @@ public partial class MainWindow : Window, IDisposable
         List<UserControl> itemList = [.. CharacterSheetPanel.Items.OfType<UserControl>()];
         itemList.Insert(insertIndex + 1, previewScriptCharacter);
 
-        if (character.FirstNight >= 1)
+        if (ScriptParse.FirstNightOrderIds.Contains(character.Id))
         {
-            MutableCharacter? target = LoadedScript.Meta.FirstNight.FirstOrDefault(mc => mc.FirstNight >= character.FirstNight);
+            MutableCharacter? target = LoadedScript.Meta.FirstNight.FirstOrDefault(mc => Array.IndexOf(ScriptParse.FirstNightOrderIds, mc.Id) >= Array.IndexOf(ScriptParse.FirstNightOrderIds, character.Id));
             if (target is null)
             {
                 LoadedScript.Meta.FirstNight.Add(character);
@@ -723,9 +873,9 @@ public partial class MainWindow : Window, IDisposable
             }
         }
 
-        if (character.OtherNight >= 1)
+        if (ScriptParse.OtherNightOrderIds.Contains(character.Id))
         {
-            MutableCharacter? target = LoadedScript.Meta.OtherNight.FirstOrDefault(mc => mc.FirstNight >= character.FirstNight);
+            MutableCharacter? target = LoadedScript.Meta.OtherNight.FirstOrDefault(mc => Array.IndexOf(ScriptParse.OtherNightOrderIds, mc.Id) >= Array.IndexOf(ScriptParse.OtherNightOrderIds, character.Id));
             if (target is null)
             {
                 LoadedScript.Meta.OtherNight.Add(character);
@@ -822,27 +972,32 @@ public partial class MainWindow : Window, IDisposable
             ClockFile.GetEntry(p)?.Delete();
         }
 
-        List<PreviewScriptCharacter> previews = [..CharacterSheetPanel.Items.OfType<PreviewScriptCharacter>()
-            .Where(psc => psc.LoadedCharacter == character)];
-
-        foreach (PreviewScriptCharacter psc in previews)
+        EditPanel.Children.RemoveAll(EditPanel.Children.OfType<EditCharacter>().Where(ec => ec.LoadedCharacter == character));
+        foreach (PopOutWindow pow in PopOutWindows)
         {
-            EditCharacter? edit = psc.Delete();
-            if (edit is not null)
+            if (pow.LoadedControl is not EditCharacter ec)
             {
-                EditPanel.Children.Remove(edit);
-                foreach (PopOutWindow p in PopOutWindows.Where(p => p.LoadedControl == edit))
-                {
-                    p.Close();
-                }
-
-                PopOutWindows.RemoveAll(p => p.LoadedControl == edit);
+                continue;
             }
 
-            List<object?> objects = [.. CharacterSheetPanel.Items];
-            objects.Remove(psc);
-            CharacterSheetPanel.ItemsSource = objects;
+            if (ec.LoadedCharacter == character)
+            {
+                pow.Close();
+            }
         }
+
+        if (CharacterSheetPanel.ItemsSource == null)
+        {
+            return;
+        }
+
+        List<Control> controls = [.. CharacterSheetPanel.ItemsSource.OfType<Control>()];
+        foreach (PreviewScriptCharacter psc in CharacterSheetPanel.Items.Source.OfType<PreviewScriptCharacter>().Where(psc => psc.LoadedCharacter == character))
+        {
+            controls.Remove(psc);
+        }
+
+        CharacterSheetPanel.ItemsSource = controls;
     }
 
     private void CloseScript()
@@ -895,11 +1050,62 @@ public partial class MainWindow : Window, IDisposable
         App.AddOpenWindow(this);
 
         TaskManager.ScheduleTask(() => DisplayErrors(LoadedScript?.Errors ?? ReadOnlyCollection<string>.Empty, this));
+        TaskManager.ScheduleAsyncTask(async () =>
+        {
+            List<IStorageFile> files = [];
+            foreach (string s in App.DataStore.RecentlyOpenedFiles.ToArray())
+            {
+                IStorageFile? sf = await StorageProvider.TryGetFileFromPathAsync(s);
+                if (sf is null)
+                {
+                    App.DataStore.RecentlyOpenedFiles.Remove(s);
+                    continue;
+                }
+                files.Add(sf);
+            }
+
+            RecentlyOpenedFiles.Clear();
+            RecentlyOpenedFiles.AddRange(files);
+
+            App.DataStore.PropertyChanged += DataStoreRecentlyOpenedFilesChanged;
+        });
+
+
+    }
+
+    private void DataStoreRecentlyOpenedFilesChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(App.DataStore.RecentlyOpenedFiles):
+                TaskManager.ScheduleAsyncTask(async () =>
+                {
+                    List<IStorageFile> files = [];
+                    foreach (string s in App.DataStore.RecentlyOpenedFiles.ToArray())
+                    {
+                        IStorageFile? sf = await StorageProvider.TryGetFileFromPathAsync(s);
+                        if (sf is null)
+                        {
+                            App.DataStore.RecentlyOpenedFiles.Remove(s);
+                            continue;
+                        }
+                        files.Add(sf);
+                    }
+
+                    RecentlyOpenedFiles.Clear();
+                    RecentlyOpenedFiles.AddRange(files);
+                });
+                return;
+            case nameof(App.DataStore.ColumnCount):
+                UpdateResponsiveLayouts();
+                return;
+        }
     }
 
     private void MainWindow_OnClosed(object? sender, EventArgs e)
     {
         App.CloseWindow(this);
+        App.DataStore.PropertyChanged -= DataStoreRecentlyOpenedFilesChanged;
     }
 
     private void Window_OnClosing(object? sender, WindowClosingEventArgs e)
@@ -947,7 +1153,7 @@ public partial class MainWindow : Window, IDisposable
         });
     }
 
-    public void SaveMenuItem_OnClick(object? sender, RoutedEventArgs e)
+    private void SaveMenuItem_OnClick(object? sender, RoutedEventArgs e)
     {
         if (LoadedScript is null)
         {
@@ -973,7 +1179,10 @@ public partial class MainWindow : Window, IDisposable
 
     private void SaveAllMenuItem_OnClick(object? sender, RoutedEventArgs e)
     {
-        App.SaveAll(sender, e);
+        foreach (MainWindow w in App.Windows)
+        {
+            w.SaveMenuItem_OnClick(sender, e);
+        }
     }
 
     private void TownsfolkMenuItem_OnClick(object? sender, RoutedEventArgs e)
@@ -1005,27 +1214,14 @@ public partial class MainWindow : Window, IDisposable
     {
         AddNewCharacter(TeamEnum.Fabled);
     }
+    private void LoricMenuItem_OnClick(object? sender, RoutedEventArgs e)
+    {
+        AddNewCharacter(TeamEnum.Loric);
+    }
 
     private void PopOutWindow_Closed(object? sender, EventArgs e)
     {
-        if (sender is not PopOutWindow window)
-        {
-            return;
-        }
 
-        if (window.LoadedControl is not EditCharacter edit)
-        {
-            return;
-        }
-
-        if (EditPanel.Children.Count != 0)
-        {
-            return;
-        }
-
-        PreviewScriptCharacter? psc = CharacterSheetPanel.Items.OfType<PreviewScriptCharacter>()
-            .SingleOrDefault(p => p.LoadedCharacter == edit.LoadedCharacter);
-        psc?.LoadMoreInfo();
     }
 
     private void AddOfficialCharacterMenuItem_OnClick(object? sender, RoutedEventArgs e)
@@ -1088,7 +1284,8 @@ public partial class MainWindow : Window, IDisposable
                 return;
             }
 
-            using MainWindow newWindow = await CreateAsync(file);
+            using MainWindow newWindow = new();
+            await newWindow.LoadScriptFileAsync(file);
             await AddCharacterFromOpenClockmakerScript(newWindow);
 
             newWindow.CloseScript();
@@ -1204,7 +1401,7 @@ public partial class MainWindow : Window, IDisposable
                 Header = newHeader
             };
             MainWindow mw = window;
-            newItem.Click += (o, args) =>
+            newItem.Click += (_, _) =>
             {
                 TaskManager.ScheduleAsyncTask(async () =>
                 {
@@ -1236,12 +1433,6 @@ public partial class MainWindow : Window, IDisposable
             CharacterSheetPanel.Items.OfType<PreviewScriptCharacter>().SingleOrDefault(psc => psc.LoadedCharacter == mc) ??
             CreateNewPreviewScriptCharacter(mc, ImageLoader, LoadedScript))];
 
-        foreach (PreviewScriptCharacter psc in CharacterSheetPanel.Items.OfType<PreviewScriptCharacter>()
-                     .Where(psc => !characters.Contains(psc)))
-        {
-            psc.Delete();
-        }
-
         UserControl[] items = [title, .. characters];
 
         CharacterSheetPanel.ItemsSource = items;
@@ -1252,7 +1443,6 @@ public partial class MainWindow : Window, IDisposable
         PreviewScriptCharacter psc = new PreviewScriptCharacter().Load(mc, imageLoader, loadedScript);
         psc.OnLoadMoreInfo += Psc_OnLoadMoreInfo;
         psc.OnDeleteCharacterClicked += PscOnDeleteCharacterClicked;
-        psc.OnUnloadMoreInfoWindow += Psc_OnUnloadMoreInfoWindow;
         psc.OnPopOutMoreInfo += Psc_OnPopOutMoreInfo;
         psc.OnDragOverMe += Psc_OnDragOverMe;
         psc.OnAddCharacter += Psc_OnAddCharacter;
@@ -1270,14 +1460,18 @@ public partial class MainWindow : Window, IDisposable
         DragOverPreview(e.Value1, e.Value2);
     }
 
-    private void Psc_OnPopOutMoreInfo(object? sender, SimpleEventArgs<UserControl, string> e)
+    private void Psc_OnPopOutMoreInfo(object? sender, SimpleEventArgs<EditCharacter, string> e)
     {
-        PopAction(e.Value1, e.Value2);
-    }
+        if (e.Value1 is INamedControl<UserControl> nc)
+        {
+            PopAction(nc);
+        }
+        else
+        {
+            PopAction(e.Value1, e.Value2);
+        }
 
-    private void Psc_OnUnloadMoreInfoWindow(object? sender, SimpleEventArgs<UserControl> e)
-    {
-        EditPanel.Children.Remove(e.Value);
+        EditPanel.Children.RemoveAll(EditPanel.Children.OfType<EditCharacter>().Where(ec => ec.LoadedCharacter == e.Value1.LoadedCharacter));
     }
 
     private void PscOnDeleteCharacterClicked(object? sender, SimpleEventArgs<MutableCharacter> e)
@@ -1289,7 +1483,7 @@ public partial class MainWindow : Window, IDisposable
     {
         LoadEditControl(e.Value);
     }
-    private void Meta_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void Meta_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         Title = $"{LoadedScript?.Meta.Name ?? "New Script"} - Clockmaker Beta {App.BetaVersionNumber}";
     }
@@ -1304,9 +1498,16 @@ public partial class MainWindow : Window, IDisposable
         RemoveCharacterFromScript(e.Value);
     }
 
-    private void ScriptTitle_OnPop(object? sender, SimpleEventArgs<UserControl, string> e)
+    private void ScriptTitle_OnPop(object? sender, SimpleEventArgs<EditCharacter, string> e)
     {
-        PopAction(e.Value1, e.Value2);
+        if (e.Value1 is INamedControl<UserControl> nc)
+        {
+            PopAction(nc);
+        }
+        else
+        {
+            PopAction(e.Value1, e.Value2);
+        }
     }
 
     private void ScriptTitle_OnLoadEdit(object? sender, SimpleEventArgs<UserControl> e)
@@ -1356,9 +1557,148 @@ public partial class MainWindow : Window, IDisposable
 
             string path = Path.Join(appdata, "setup.exe");
             await File.WriteAllBytesAsync(path, bytes);
-            IStorageFile? file = await StorageProvider.TryGetFileFromPathAsync(path) ?? throw new NoNullAllowedException("file can't be null");
+            IStorageFile file = await StorageProvider.TryGetFileFromPathAsync(path) ?? throw new NoNullAllowedException("file can't be null");
             await Launcher.LaunchFileAsync(file);
-            App.Desktop?.Shutdown(0);
+            App.CloseAllWindows();
         });
+    }
+
+    private void OpenRecentMenuItem_OnSubmenuOpened(object? sender, RoutedEventArgs e)
+    {
+        OpenRecentMenuItem.Items.Clear();
+        foreach (IStorageFile file in RecentlyOpenedFiles)
+        {
+            MenuItem mi = new()
+            {
+                Header = file.Name
+            };
+            mi.Click += (_, _) => TaskManager.ScheduleAsyncTask(async () =>
+            {
+                if (LoadedScript is null || LoadedScript.Characters.Count == 0)
+                {
+                    PathToOpenFile?.Dispose();
+                    PathToOpenFile = file;
+                    ClockFile.Dispose();
+
+                    await LoadScriptFileAsync(file);
+                }
+                else
+                {
+                    await CreateAndShowAsync(file);
+                }
+            });
+            OpenRecentMenuItem.Items.Add(mi);
+        }
+
+        if (OpenRecentMenuItem.Items.Count == 0)
+        {
+            OpenRecentMenuItem.Items.Add(new MenuItem
+            {
+                Header = "None",
+                IsEnabled = false
+            });
+        }
+    }
+
+    private void Layoutable_OnLayoutUpdated(object? sender, EventArgs e)
+    {
+        UpdateResponsiveLayouts();
+    }
+
+    private void UpdateResponsiveLayouts()
+    {
+        bool isEditPanelEmpty = EditPanel.Children.Count == 0;
+        CloseButton.IsVisible = !isEditPanelEmpty;
+        PopOutButton.IsVisible = !isEditPanelEmpty;
+
+        switch (App.DataStore.ColumnCount)
+        {
+            case 0 when isEditPanelEmpty:
+            case 1 when isEditPanelEmpty:
+                UpdateScriptColumnLayout();
+                return;
+            case 0 when Width < 1200:
+            case 1:
+                UpdateEditColumnLayout();
+                return;
+            case 0:
+            case 2:
+                UpdateTwoColumnLayout();
+                return;
+            default:
+                App.DataStore.ColumnCount = 0;
+                goto case 0;
+        }
+    }
+
+    private void UpdateScriptColumnLayout()
+    {
+        ColumnDefinitions column = MainGridView.ColumnDefinitions;
+        column[0].MinWidth = 600;
+        column[0].Width = GridLength.Star;
+        column[1].Width = new GridLength(0);
+        column[2].MinWidth = 0;
+        column[2].Width = new GridLength(0);
+    }
+
+    private void UpdateEditColumnLayout()
+    {
+        ColumnDefinitions column = MainGridView.ColumnDefinitions;
+        column[0].MinWidth = 0;
+        column[0].Width = new GridLength(0);
+        column[1].Width = new GridLength(0);
+        column[2].MinWidth = 600;
+        column[2].Width = GridLength.Star;
+    }
+
+    private void UpdateTwoColumnLayout()
+    {
+        ColumnDefinitions column = MainGridView.ColumnDefinitions;
+        column[0].MinWidth = 600;
+        column[2].MinWidth = 600;
+        if (column[0].Width.IsStar || column[0].Width.Value < 600)
+        {
+            column[0].Width = new GridLength(Width / 2);
+            column[2].Width = GridLength.Star;
+        }
+        column[1].Width = new GridLength(10);
+
+    }
+
+    private void CloseButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        foreach (IDelete d in EditPanel.Children.OfType<IDelete>())
+        {
+            d.Delete();
+        }
+        EditPanel.Children.Clear();
+    }
+
+    private void PopOutButton_OnClick(object? sender, RoutedEventArgs e)
+    {
+        switch (EditPanel.Children.Count)
+        {
+            case 0:
+                //How the hell did you even fire, this button isn't accessible with a child count of 0
+                return;
+            case 1:
+                Control c = EditPanel.Children[0];
+                EditPanel.Children.Clear();
+                if (c is INamedControl<Control> nc)
+                {
+                    PopAction(nc);
+                }
+                else
+                {
+                    PopAction(c, c.GetType().Name);
+                }
+                return;
+        }
+    }
+
+    private void DebugMenuItem_OnClick(object? sender, RoutedEventArgs e)
+    {
+        var printpreview = new CharacterSheetPreview(LoadedScript!, ImageLoader!);
+        printpreview.Show(this);
     }
 }

@@ -17,12 +17,17 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Root;
 
-public partial class ImagePicker : UserControl
+
+/// <summary>
+/// A control for scrolling through and replacing images
+/// </summary>
+public partial class ImagePicker : UserControl, IDelete, IOnDelete, ILock
 {
     private ScriptImageLoader ScriptImageLoader { get; set; }
     private MutableCharacter LoadedCharacter { get; set; } = MutableCharacter.Default;
     private int _selectedImage = -1;
 
+    /// <inheritdoc />
     public event EventHandler<SimpleEventArgs<MutableCharacter>>? OnDelete;
 
     private int SelectedImage
@@ -47,6 +52,7 @@ public partial class ImagePicker : UserControl
     }
     private int _imageCount = -1;
 
+    /// <inheritdoc />
     public ImagePicker()
     {
         InitializeComponent();
@@ -126,14 +132,26 @@ public partial class ImagePicker : UserControl
         });
     }
 
-    public void Load(MutableCharacter loadedCharacter, ScriptImageLoader loader, IImage image)
+    /// <summary>
+    /// Load the current image data
+    /// </summary>
+    /// <param name="loadedCharacter">The character to load</param>
+    /// <param name="loader">The image loader</param>
+    /// <param name="image">The image to display, null if one needs to be fetched from the image loader</param>
+    public void Load(MutableCharacter loadedCharacter, ScriptImageLoader loader, IImage? image = null)
     {
         LoadedCharacter = loadedCharacter;
         ScriptImageLoader = loader;
-        LoadedImage.Source = image;
-        SetToFirstImage();
-        LoadedCharacter.PropertyChanged += LoadedCharacter_PropertyChanged;
-        ScriptImageLoader.ReloadImage += ScriptImageLoader_ReloadImage;
+        TaskManager.ScheduleAsyncTask(async () =>
+        {
+            image ??= await loader.GetImageAsync(loadedCharacter, 0);
+
+            LoadedImage.Source = image;
+            LoadedCharacter.PropertyChanged += LoadedCharacter_PropertyChanged;
+            ScriptImageLoader.ReloadImage += ScriptImageLoader_ReloadImage;
+            SetToFirstImage();
+        });
+
     }
 
     private void SetToFirstImage()
@@ -174,16 +192,19 @@ public partial class ImagePicker : UserControl
     }
 
 
+    /// <inheritdoc />
     public void Lock()
     {
         ReplaceButton.IsEnabled = false;
     }
 
+    /// <inheritdoc />
     public void Unlock()
     {
         ReplaceButton.IsEnabled = true;
     }
 
+    /// <inheritdoc />
     public void Delete()
     {
         LoadedCharacter.PropertyChanged -= LoadedCharacter_PropertyChanged;
@@ -194,11 +215,15 @@ public partial class ImagePicker : UserControl
     {
         TaskManager.ScheduleAsyncTask(async () =>
         {
+            if (TopLevel.GetTopLevel(this) is not Window top)
+            {
+                return;
+            }
             if (!IsShiftModeEnabled())
             {
                 ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Confirm Delete",
                     $"Are you sure you want to delete \"{LoadedCharacter.Name}\"?",
-                    ButtonEnum.YesNo).ShowWindowDialogAsync(App.MainWindow);
+                    ButtonEnum.YesNo).ShowWindowDialogAsync(top);
                 if (result != ButtonResult.Yes)
                 {
                     return;

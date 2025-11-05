@@ -2,35 +2,45 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
-using Avalonia.Media.Imaging;
 using Avalonia.Styling;
 using Avalonia.Themes.Fluent;
 using Clockmaker0.Data;
 using Clockmaker0.Data.Medo;
 using ImageMagick;
 using Pikcube.AddIns;
-using Pikcube.ReadWriteScript.Core.Mutable;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Clockmaker0;
 
+/// <inheritdoc />
 public class App : Application
 {
-    public static App? Instance { get; set; }
-    public static IClassicDesktopStyleApplicationLifetime? Desktop { get; private set; }
-    public static Window MainWindow => Desktop?.MainWindow ?? throw new NoNullAllowedException();
+    /// <summary>
+    /// Contains all properties that are saved between app sessions
+    /// </summary>
+    public static PersistentDataStore DataStore { get; private set; } = new();
+    private static App? Instance { get; set; }
+    private static IClassicDesktopStyleApplicationLifetime? Desktop { get; set; }
     private static ConcurrentDictionary<Key, bool> KeyState { get; } = new(Enum.GetValues<Key>().Distinct().Select(k => new KeyValuePair<Key, bool>(k, false)));
+    /// <summary>
+    /// Contains every currently open Window
+    /// </summary>
     public static IEnumerable<MainWindow> Windows => OpenWindows.Keys.OfType<MainWindow>();
 
-    public static string BetaVersionNumber => "0.1.0.5";
+    /// <summary>
+    /// Represents the Current App Version
+    /// </summary>
+    public static string BetaVersionNumber => "0.1.0.7";
 
+    /// <summary>
+    /// Set that a particular key is up or down
+    /// </summary>
+    /// <param name="k">Key name</param>
+    /// <param name="b">True when key is pressed, false when key is released</param>
     public static void SetKeyState(Key k, bool b)
     {
         lock (KeyState)
@@ -45,14 +55,33 @@ public class App : Application
         OnKeyChanged?.Invoke(k, new KeyEventArgs(k, KeyState[k]));
     }
 
+    /// <summary>
+    /// Raised when a key is pressed or released
+    /// </summary>
     public static event EventHandler<KeyEventArgs>? OnKeyChanged;
 
+    /// <summary>
+    /// Encapsulates which key was changed and its current state
+    /// </summary>
+    /// <param name="k">Key name</param>
+    /// <param name="isDown">True when key is pressed, false when key is released</param>
     public class KeyEventArgs(Key k, bool isDown) : EventArgs
     {
+        /// <summary>
+        /// The key that was pressed
+        /// </summary>
         public Key KeyPressed { get; init; } = k;
+        /// <summary>
+        /// True when key is pressed, false when key is released
+        /// </summary>
         public bool IsDown { get; init; } = isDown;
     }
 
+    /// <summary>
+    /// Function that checks if any of the provided keys are down
+    /// </summary>
+    /// <param name="keys">Keys to check</param>
+    /// <returns>True when any of the keys are down</returns>
     public static bool IsKeyDown(params Span<Key> keys)
     {
         foreach (Key key in keys)
@@ -66,22 +95,47 @@ public class App : Application
         return false;
     }
 
+    /// <summary>
+    /// Checks if this window is open or now
+    /// </summary>
+    /// <param name="mainWindow">The window to check</param>
+    /// <returns>True if the window is open, false otherwise</returns>
     public static bool IsWindowOpen(MainWindow mainWindow) => OpenWindows.ContainsKey(mainWindow);
 
+    /// <summary>
+    /// Checks if this window is the only Window Open
+    /// </summary>
+    /// <param name="mainWindow">The window to check</param>
+    /// <returns>True if the window is open, false otherwise</returns>
     public static bool IsOnlyWindowOpened(MainWindow mainWindow) => IsWindowOpen(mainWindow) && OpenWindows.Count == 1;
 
     private static ConcurrentDictionary<Window, bool> OpenWindows { get; } = [];
 
+    /// <summary>
+    /// Marks the window as open. Called by the WindowOpened event in Main Window
+    /// </summary>
+    /// <param name="window"></param>
     public static void AddOpenWindow(Window window)
     {
         OpenWindows.GetOrAdd(window, false);
+        if (Desktop is null)
+        {
+            return;
+        }
+
+        Desktop.MainWindow ??= window;
     }
 
+    /// <summary>
+    /// Marks the window as closed. If no open windows remain after this, the program shuts down.
+    /// </summary>
+    /// <param name="window"></param>
     public static void CloseWindow(Window window)
     {
         OpenWindows.Remove(window, out _);
         if (OpenWindows.IsEmpty)
         {
+            PersistentDataStore.Save(DataStore);
             Desktop?.Shutdown();
             return;
         }
@@ -92,19 +146,20 @@ public class App : Application
 
     }
 
+    /// <summary>
+    /// Call each window's Close Method then shut down
+    /// </summary>
     public static void CloseAllWindows()
     {
+        foreach (Window window in OpenWindows.Keys)
+        {
+            window.Close();
+        }
+        PersistentDataStore.Save(DataStore);
         Desktop?.Shutdown();
     }
 
-    public static void SaveAll(object? sender, RoutedEventArgs routedEventArgs)
-    {
-        foreach (MainWindow w in OpenWindows.Keys.OfType<MainWindow>())
-        {
-            w.SaveMenuItem_OnClick(sender, routedEventArgs);
-        }
-    }
-
+    /// <inheritdoc />
     public override void Initialize()
     {
         HighlanderValidator.Challenge();
@@ -126,20 +181,31 @@ public class App : Application
 
         TaskManager.ScheduleAsyncTask(async () =>
         {
-            (await Clockmaker0.MainWindow.CreateAsync(e.Args)).Show();
+            await MainWindow.OpenScriptsAsync(e.Args);
         });
     }
 
     private Queue<string[]> Args { get; init; } = [];
 
+    /// <inheritdoc />
     public override void OnFrameworkInitializationCompleted()
     {
         if (Instance is not null)
         {
             throw new HighlanderException(nameof(Instance));
         }
-
+        DataStore = PersistentDataStore.Load();
         TokenStore.RotateSecrets();
+
+        RequestedThemeVariant = DataStore.Theme switch
+        {
+            ThemeEnum.Auto => ThemeVariant.Default,
+            ThemeEnum.Dark => ThemeVariant.Dark,
+            ThemeEnum.Light => ThemeVariant.Light,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        DataStore.PropertyChanged += DataStore_PropertyChanged;
 
         Instance = this;
 
@@ -148,27 +214,27 @@ public class App : Application
             throw new HighlanderException(nameof(Desktop));
         }
 
-
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             Desktop = desktop;
             desktop.ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            Desktop.ShutdownRequested += Desktop_ShutdownRequested;
+            Desktop.Exit += Desktop_Exit;
+
 
             TaskManager.ScheduleTask(async () =>
             {
                 if (desktop.Args is null)
                 {
-                    desktop.MainWindow = Clockmaker0.MainWindow.Create();
+                    MainWindow.Create().Show();
                 }
                 else
                 {
-                    desktop.MainWindow = await Clockmaker0.MainWindow.CreateAsync(desktop.Args);
+                    await MainWindow.OpenScriptsAsync(desktop.Args);
                 }
-
-                desktop.MainWindow.Show();
                 while (Args.Count > 0)
                 {
-                    (await Clockmaker0.MainWindow.CreateAsync(Args.Dequeue())).Show();
+                    await MainWindow.OpenScriptsAsync(Args.Dequeue());
                 }
             });
         }
@@ -176,28 +242,34 @@ public class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
-    public static async Task CopyCharacterAsync(MutableCharacter originalCharacter, ScriptImageLoader originalLoader, MutableBotcScript targetScript, MutableCharacter loadedCharacter, ScriptImageLoader targetLoader, TrackedList<MutableJinx> allJinxes, Action<MutableCharacter> addFunction)
+    private void DataStore_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        MutableCharacter copyCharacter = originalCharacter.MakeCopy();
-        addFunction(copyCharacter);
-        for (int n = 0; n < originalCharacter.Image.Count; ++n)
+        switch (e.PropertyName)
         {
-            Bitmap img = await originalLoader.GetImageAsync(originalCharacter, n);
-            await targetLoader.TrySetImageAsync(copyCharacter, n, s =>
-            {
-                img.Save(s);
-                return Task.CompletedTask;
-            }, MagickFormat.Png);
+            case nameof(DataStore.Theme):
+                RequestedThemeVariant = DataStore.Theme switch
+                {
+                    ThemeEnum.Auto => ThemeVariant.Default,
+                    ThemeEnum.Dark => ThemeVariant.Dark,
+                    ThemeEnum.Light => ThemeVariant.Light,
+                    _ => RequestedThemeVariant
+                };
+                return;
         }
-
-        int targetIndex = targetScript.Characters.IndexOf(copyCharacter);
-
-        targetScript.Characters.MoveIndexOfToIndexOf(targetIndex, targetScript.Characters.Count - 1);
-
-        targetIndex = targetScript.Characters.IndexOf(copyCharacter);
-        int positionIndex = targetScript.Characters.IndexOf(loadedCharacter);
-
-        targetScript.Characters.MoveIndexOfToIndexOf(targetIndex, positionIndex);
-        targetScript.Jinxes.AddRange(allJinxes.Where(j => j.Parent == originalCharacter.Id).Select(j => new MutableJinx(j.Rule, copyCharacter.Id, j.Child)));
     }
+
+    private static void Desktop_Exit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
+    {
+        PersistentDataStore.Save(DataStore);
+    }
+
+    private static void Desktop_ShutdownRequested(object? sender, ShutdownRequestedEventArgs e)
+    {
+        PersistentDataStore.Save(DataStore);
+    }
+
+    /// <summary>
+    /// Get the oldest existing MainWindow object if it exists
+    /// </summary>
+    public static MainWindow? OldestMainWindow => Desktop?.MainWindow as MainWindow;
 }

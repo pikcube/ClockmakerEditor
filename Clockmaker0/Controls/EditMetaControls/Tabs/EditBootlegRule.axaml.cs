@@ -10,20 +10,29 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditMetaControls.Tabs;
 
+/// <inheritdoc />
 public partial class EditBootlegRule : UserControl
 {
     private BootlegRule LoadedRule { get; set; } = new("loading...");
-    private Action DeleteControl { get; set; } = () => { };
 
+    /// <summary>
+    /// Raised when this control is to delete itself. The creator is responsible for detatching this control from the visual tree
+    /// </summary>
+    public event EventHandler<EditBootlegRule>? OnDelete;
+
+    /// <inheritdoc />
     public EditBootlegRule()
     {
         InitializeComponent();
     }
 
-    public void Load(BootlegRule rule, Action deleteAction)
+    /// <summary>
+    /// Load the specified bootlegger control into the current object
+    /// </summary>
+    /// <param name="rule">The rule to load</param>
+    public void Load(BootlegRule rule)
     {
         LoadedRule = rule;
-        DeleteControl = deleteAction;
 
         BootlegTextBox.Text = LoadedRule.Rule;
 
@@ -46,11 +55,15 @@ public partial class EditBootlegRule : UserControl
     {
         TaskManager.ScheduleAsyncTask(async () =>
         {
+            if (TopLevel.GetTopLevel(this) is not Window top)
+            {
+                return;
+            }
             if (!App.IsKeyDown(Key.RightShift, Key.LeftShift))
             {
                 ButtonResult result = await MessageBoxManager.GetMessageBoxStandard("Confirm Delete",
                     "Are you sure you want to delete this bootleg rule?",
-                    ButtonEnum.YesNo).ShowWindowDialogAsync(App.MainWindow);
+                    ButtonEnum.YesNo).ShowWindowDialogAsync(top);
                 if (result != ButtonResult.Yes)
                 {
                     return;
@@ -59,7 +72,7 @@ public partial class EditBootlegRule : UserControl
 
 
             LoadedRule.Delete();
-            DeleteControl();
+            OnDelete?.Invoke(this, this);
         });
     }
 

@@ -3,11 +3,15 @@ using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Clockmaker0.Data;
 using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures;
 
-public partial class NightSignalFeatures : UserControl
+/// <summary>
+/// Control for creating Night Signals in the app
+/// </summary>
+public partial class NightSignalFeatures : UserControl, ILock
 {
     private MutableCharacter LoadedCharacter { get; set; } = MutableCharacter.Default;
 
@@ -15,6 +19,7 @@ public partial class NightSignalFeatures : UserControl
 
     private List<NightSignalItem> NightSignalItems { get; } = [];
 
+    /// <inheritdoc />
     public NightSignalFeatures()
     {
         InitializeComponent();
@@ -26,6 +31,10 @@ public partial class NightSignalFeatures : UserControl
         };
     }
 
+    /// <summary>
+    /// Load in the current character data
+    /// </summary>
+    /// <param name="loadedCharacter">The character to load</param>
     public void Load(MutableCharacter loadedCharacter)
     {
         LoadedCharacter = loadedCharacter;
@@ -68,6 +77,7 @@ public partial class NightSignalFeatures : UserControl
         LoadedCharacter.MutableAppFeatures.Signals.Add(new MutableSignal("", true));
     }
 
+    /// <inheritdoc />
     public void Lock()
     {
         NewButton.IsEnabled = false;
@@ -77,6 +87,7 @@ public partial class NightSignalFeatures : UserControl
         }
     }
 
+    /// <inheritdoc />
     public void Unlock()
     {
         NewButton.IsEnabled = true;

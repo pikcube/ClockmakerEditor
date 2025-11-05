@@ -1,22 +1,37 @@
 using System.ComponentModel;
 using System.Globalization;
 using Avalonia.Controls;
+using Pikcube.AddIns;
 using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures;
 
+/// <inheritdoc />
 public partial class VotingFeatures : UserControl
 {
     private MutableAppFeatures LoadedAppFeatures { get; set; } = new(MutableCharacter.Default);
+    private bool _isLoaded = false;
 
+    /// <inheritdoc />
     public VotingFeatures()
     {
         InitializeComponent();
     }
 
-    public void Load(MutableCharacter loadedCharacter, MutableBotcScript loadedScript)
+    /// <summary>
+    /// Load the control based on the current character and script data and initialize all event listeners. This method may only be called once.
+    /// </summary>
+    /// <param name="loadedAppFeatures">The app feature object to load</param>
+    /// <exception cref="HighlanderException">Thrown when Load is called more than once</exception>
+    public void Load(MutableAppFeatures loadedAppFeatures)
     {
-        LoadedAppFeatures = loadedCharacter.MutableAppFeatures;
+        if (_isLoaded)
+        {
+            throw new HighlanderException(nameof(LoadedAppFeatures));
+        }
+
+        _isLoaded = true;
+        LoadedAppFeatures = loadedAppFeatures;
         MultiplierPicker.ParsingNumberStyle = NumberStyles.Integer;
         MultiplierPicker.Value = LoadedAppFeatures.Multiplier;
         MultiplierPicker.ValueChanged += MultiplierPicker_ValueChanged;

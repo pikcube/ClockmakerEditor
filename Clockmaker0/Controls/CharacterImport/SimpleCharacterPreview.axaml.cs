@@ -5,16 +5,26 @@ using Pikcube.ReadWriteScript.Core;
 
 namespace Clockmaker0.Controls.CharacterImport;
 
+/// <summary>
+/// A basic control to view a character with its icon
+/// </summary>
 public partial class SimpleCharacterPreview : UserControl
 {
     private ScriptImageLoader ImageLoader { get; set; } = ScriptImageLoader.Default;
 
     private ICharacter LoadedCharacter { get; set; } = Character.Default;
+
+    /// <inheritdoc />
     public SimpleCharacterPreview()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the character's name and image
+    /// </summary>
+    /// <param name="character">Character object</param>
+    /// <param name="imageLoader">Character's image loader</param>
     public void Load(ICharacter character, ScriptImageLoader imageLoader)
     {
         LoadedCharacter = character;

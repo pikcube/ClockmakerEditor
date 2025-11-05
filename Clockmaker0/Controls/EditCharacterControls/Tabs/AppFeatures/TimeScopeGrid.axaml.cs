@@ -7,6 +7,9 @@ using Pikcube.ReadWriteScript.Core.Special;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures;
 
+/// <summary>
+/// Generic Contorl for selecting a time and ability scope
+/// </summary>
 public partial class TimeScopeGrid : UserControl
 {
     private List<List<CheckBox>> Checkboxes { get; set; }
@@ -14,6 +17,8 @@ public partial class TimeScopeGrid : UserControl
     private List<CheckBox> AllRowCheckBoxes { get; set; }
     private List<CheckBox> AllColumnCheckBoxes { get; set; }
     private List<TextBlock> AllColumnTextBlocks { get; set; }
+
+    /// <inheritdoc />
     public TimeScopeGrid()
     {
         InitializeComponent();
@@ -79,6 +84,11 @@ public partial class TimeScopeGrid : UserControl
         }
     }
 
+    /// <summary>
+    /// Show or hide a specific column by index
+    /// </summary>
+    /// <param name="colNum">The column number</param>
+    /// <param name="isShown">True if the column is shown</param>
     public void ShowHideColumn(int colNum, bool isShown)
     {
         for (int n = 0; n < 7; ++n)
@@ -129,7 +139,7 @@ public partial class TimeScopeGrid : UserControl
         }
     }
 
-    public void RemoveAllScope()
+    private void RemoveAllScope()
     {
         for (int rowNum = 1; rowNum < 7; ++rowNum)
         {
@@ -161,7 +171,7 @@ public partial class TimeScopeGrid : UserControl
         UpdateBuffers();
     }
 
-    public void RestoreAllScope()
+    private void RestoreAllScope()
     {
         for (int n = 0; n < 5; ++n)
         {
@@ -199,7 +209,11 @@ public partial class TimeScopeGrid : UserControl
         }
     }
 
-    public bool TryUpdateGrid(ScopeTimes gridData)
+    /// <summary>
+    /// Update all grid values based on the current ScopeTimes
+    /// </summary>
+    /// <param name="gridData">The new time values</param>
+    public void TryUpdateGrid(ScopeTimes gridData)
     {
         for (int rowNum = 0; rowNum < 7; ++rowNum)
         {
@@ -224,7 +238,6 @@ public partial class TimeScopeGrid : UserControl
         {
             UpdateColumn(n);
         }
-        return true;
     }
 
     private static bool GetIsChecked(ScopeTimes gridData, int rowNum, int colNum)
@@ -245,6 +258,9 @@ public partial class TimeScopeGrid : UserControl
         };
     }
 
+    /// <summary>
+    /// Raised when a checkbox is toggled
+    /// </summary>
     public event EventHandler<GridEventArgs>? CheckBoxChanged;
 
     private void AllColumnCheckBoxesChanged(int n1, CheckBox allColumnCheckBox)
@@ -269,7 +285,7 @@ public partial class TimeScopeGrid : UserControl
     {
         UpdateRow(rowNum);
         UpdateColumn(colNum);
-        CheckBoxChanged?.Invoke(this, GridEventArgs.Get(rowNum, colNum, checkBox.IsChecked is true));
+        CheckBoxChanged?.Invoke(this, GetGridEventArgs(rowNum, colNum, checkBox.IsChecked is true));
     }
 
     private void SetRow(int rowNum, bool value)
@@ -356,21 +372,37 @@ public partial class TimeScopeGrid : UserControl
         }
     }
 
+    /// <summary>
+    /// Data encapsulating the grid changing state
+    /// </summary>
     public class GridEventArgs : EventArgs
     {
+        /// <summary>
+        /// The toggled scope
+        /// </summary>
         public required GlobalEnum Scope { get; init; }
+        /// <summary>
+        /// The time changed
+        /// </summary>
         public required TimeOfDay FlagChanged { get; init; }
+        /// <summary>
+        /// True if the new time is now set
+        /// </summary>
         public required bool IsSet { get; init; }
-
-        public static GridEventArgs Get(int rowNum, int colNum, bool isSet) =>
-            new()
-            {
-                IsSet = isSet,
-                Scope = (GlobalEnum)rowNum,
-                FlagChanged = (TimeOfDay)(1 << colNum)
-            };
     }
 
+    private static GridEventArgs GetGridEventArgs(int rowNum, int colNum, bool isSet) =>
+        new()
+        {
+            IsSet = isSet,
+            Scope = (GlobalEnum)rowNum,
+            FlagChanged = (TimeOfDay)(1 << colNum)
+        };
+
+    /// <summary>
+    /// Load the current ScopeTimes
+    /// </summary>
+    /// <param name="times">The current data</param>
     public void Load(ScopeTimes times)
     {
         if (times.IsAlternateScopesEnabled)

@@ -8,16 +8,28 @@ using Pikcube.ReadWriteScript.Core;
 
 namespace Clockmaker0.Controls.CharacterImport;
 
+/// <summary>
+/// Control for importing a character from a known repo
+/// </summary>
 public partial class OfficialCharacterImport : Window
 {
     private OfficialCharacterPreview[] _officialCharacterPreviews = [];
+    /// <summary>
+    /// True when the import button is clicked, so the caller knows whether or not to honor the selections
+    /// </summary>
     public bool IsConfirmed { get; private set; }
 
+    /// <inheritdoc />
     public OfficialCharacterImport()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the characters to be selected for import
+    /// </summary>
+    /// <param name="scriptImageLoader">The script's image loader</param>
+    /// <param name="source">The characters to load</param>
     public void Load(ScriptImageLoader scriptImageLoader, IEnumerable<Character> source)
     {
         _officialCharacterPreviews =
@@ -70,6 +82,9 @@ public partial class OfficialCharacterImport : Window
         }
     }
 
+    /// <summary>
+    /// The characters that are currently selected for import
+    /// </summary>
     public IEnumerable<ICharacter> ImportedCharacters => _officialCharacterPreviews.Where(ocp => ocp.IsImported).Select(ocp => ocp.LoadedCharacter);
 
     private void UpdateView()

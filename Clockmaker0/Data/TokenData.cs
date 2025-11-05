@@ -2,6 +2,7 @@ using Octokit;
 
 namespace Clockmaker0.Data;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 public class TokenData
 {
     public string? TokenType { get; init; }
@@ -31,3 +32,4 @@ public class TokenData
         ErrorUri = token.ErrorUri;
     }
 }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member

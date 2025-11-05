@@ -6,15 +6,18 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <PublishAot>False</PublishAot>
     </PropertyGroup>
     <ItemGroup>
-      <AvaloniaXaml Remove="Output\**" />
-      <Compile Remove="Output\**" />
-      <EmbeddedResource Remove="Output\**" />
-      <None Remove="Output\**" />
+        <AvaloniaXaml Remove="Output\**" />
+        <Compile Remove="Output\**" />
+        <EmbeddedResource Remove="Output\**" />
+        <None Remove="Output\**" />
     </ItemGroup>
     <ItemGroup>
         <None Remove="clock_time_5025.ico" />
+        <None Remove="default\7_0.webp" />
     </ItemGroup>
     <ItemGroup>
         <Content Include="clock_time_5025.ico" />
@@ -36,24 +39,25 @@
         <EmbeddedResource Include="default\6_0.webp" />
         <EmbeddedResource Include="default\6_1.webp" />
         <EmbeddedResource Include="default\6_2.webp" />
+        <EmbeddedResource Include="default\7_0.webp" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.7" />
-        <PackageReference Include="Avalonia.Desktop" Version="11.3.7" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.7" />
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.7" />
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.7" />
+        <PackageReference Include="Avalonia" Version="11.3.8" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.8" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.8" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.8" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.7">
+        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.8">
             <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
             <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.8.2" />
-        <PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />
+        <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.9.1" />
+        <!--<PackageReference Include="MessageBox.Avalonia" Version="3.2.0" />-->
         <PackageReference Include="Octokit" Version="14.0.0" />
         <PackageReference Include="Pikcube.AddIns" Version="1.0.1" />
-        <PackageReference Include="Pikcube.ReadWriteScript.Offline" Version="1.0.60" />
+        <PackageReference Include="Pikcube.MessageBox.Avalonia" Version="9.9.9.9" />
+        <PackageReference Include="Pikcube.ReadWriteScript.Offline" Version="1.0.63" />
         <PackageReference Include="SecureStore" Version="1.2.2" />
     </ItemGroup>
 
@@ -71,9 +75,6 @@
         <Compile Update="Controls\EditCharacterControls\Tabs\EditAppFeatures.axaml.cs">
             <DependentUpon>EditAppFeatures.axaml</DependentUpon>
         </Compile>
-        <Compile Update="Controls\EditCharacterControls\Tabs\AbstractNightOrder.axaml.cs">
-            <DependentUpon>AbstractNightOrder.axaml</DependentUpon>
-        </Compile>
         <Compile Update="Controls\EditCharacter\Tabs\EditReminderToken.axaml.cs">
             <DependentUpon>EditReminderToken.axaml</DependentUpon>
         </Compile>
@@ -82,6 +83,9 @@
         </Compile>
         <Compile Update="Controls\EditMetaControls\Tabs\EditBootlegRule.axaml.cs">
             <DependentUpon>EditBootlegRule.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Printing\ScriptTitlePreview.axaml.cs">
+          <DependentUpon>ScriptTitlePreview.axaml</DependentUpon>
         </Compile>
     </ItemGroup>
 </Project>

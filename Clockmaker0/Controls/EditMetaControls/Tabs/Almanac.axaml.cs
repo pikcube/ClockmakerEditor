@@ -4,15 +4,21 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditMetaControls.Tabs;
 
+/// <inheritdoc />
 public partial class Almanac : UserControl
 {
     private MutableMeta LoadedMeta { get; set; } = MutableMeta.Default;
 
+    /// <inheritdoc />
     public Almanac()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the almanac editor
+    /// </summary>
+    /// <param name="loadedMeta"></param>
     public void Load(MutableMeta loadedMeta)
     {
         LoadedMeta = loadedMeta;

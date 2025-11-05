@@ -10,17 +10,29 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs;
 
+/// <summary>
+/// Control for editting a reminder token
+/// </summary>
 public partial class EditReminderToken : UserControl, IDelete
 {
     private ReminderToken? Token { get; set; }
-    private Func<UserControl, bool>? OnDelete { get; set; }
+    /// <summary>
+    /// Raised when the reminder token needs to be detached from the visual tree
+    /// </summary>
+    public event EventHandler<EditReminderToken>? OnDelete;
+
+    /// <inheritdoc />
     public EditReminderToken()
     {
         InitializeComponent();
     }
 
 
-    public void Load(ReminderToken token, Func<UserControl, bool> deleteAction)
+    /// <summary>
+    /// Load in the current reminder token data
+    /// </summary>
+    /// <param name="token">The token to load</param>
+    public void Load(ReminderToken token)
     {
         Token = token;
         ReminderTextBox.Text = Token.Text;
@@ -28,7 +40,6 @@ public partial class EditReminderToken : UserControl, IDelete
 
         Token.TextChanged += Token_TextChanged;
         Token.IsGlobalChanged += Token_IsGlobalChanged;
-        OnDelete = deleteAction;
 
         Token.OnDelete += Token_OnDelete;
     }
@@ -94,12 +105,13 @@ public partial class EditReminderToken : UserControl, IDelete
     {
     }
 
+    /// <inheritdoc />
     public void Delete()
     {
         IsVisible = false;
         IsEnabled = false;
         IsGlobalComboBox.SelectionChanged -= IsGlobalComboBox_OnSelectionChanged;
         ReminderTextBox.TextChanged -= ReminderTextBox_OnTextChanged;
-        OnDelete?.Invoke(this);
+        OnDelete?.Invoke(this, this);
     }
 }

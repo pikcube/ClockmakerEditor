@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.7" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="14.9.0" />
+    <PackageReference Include="Pikcube.ReadWriteScript.Offline" Version="1.0.60" />
+  </ItemGroup>
+
+</Project>

@@ -1,23 +1,36 @@
-using System;
-using System.ComponentModel;
 using Avalonia.Controls;
+using Clockmaker0.Controls.EditCharacterControls;
 using Clockmaker0.Data;
 using Pikcube.ReadWriteScript.Core.Mutable;
+using System;
+using System.ComponentModel;
 
 namespace Clockmaker0.Controls.EditMetaControls;
 
-public partial class EditScriptMeta : UserControl
+/// <summary>
+/// Control for editing the meta property of a script
+/// </summary>
+public partial class EditScriptMeta : UserControl, IOnDelete, IOnPop
 {
     private MutableMeta LoadedMeta { get; set; } = MutableMeta.Default;
 
+    /// <inheritdoc />
     public event EventHandler<SimpleEventArgs<MutableCharacter>>? OnDelete;
-    public event EventHandler<SimpleEventArgs<UserControl, string>>? OnPop;
 
+    /// <inheritdoc />
+    public event EventHandler<SimpleEventArgs<EditCharacter, string>>? OnPop;
+
+    /// <inheritdoc />
     public EditScriptMeta()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the current meta into the control
+    /// </summary>
+    /// <param name="loadedScript">The script to load in</param>
+    /// <param name="loader">The script's image loader</param>
     public void Load(MutableBotcScript loadedScript, ScriptImageLoader loader)
     {
         LoadedMeta = loadedScript.Meta;
@@ -26,16 +39,16 @@ public partial class EditScriptMeta : UserControl
         AuthorTextBox.Text = LoadedMeta.Author;
 
         FirstNightOrderView.Load(LoadedMeta.FirstNight, loadedScript, loader, c => c.FirstNightReminder);
-        FirstNightOrderView.OnPop += NightOrderView_OnPop;
-        FirstNightOrderView.OnDelete += NightOrderView_OnDelete;
         OtherNightOrderView.Load(LoadedMeta.OtherNight, loadedScript, loader, c => c.OtherNightReminder);
-        OtherNightOrderView.OnPop += NightOrderView_OnPop;
-        OtherNightOrderView.OnDelete += NightOrderView_OnDelete;
         CustomBackgroundTab.Load(LoadedMeta, loader);
         CustomLogoTab.Load(LoadedMeta, loader);
         BootlegRulesTab.Load(LoadedMeta);
         AlmanacTab.Load(LoadedMeta);
 
+        FirstNightOrderView.OnPop += NightOrderView_OnPop;
+        FirstNightOrderView.OnDelete += NightOrderView_OnDelete;
+        OtherNightOrderView.OnPop += NightOrderView_OnPop;
+        OtherNightOrderView.OnDelete += NightOrderView_OnDelete;
         NameTextBox.TextChanged += NameTextBox_OnTextChanged;
         AuthorTextBox.TextChanged += AuthorTextBox_OnTextChanged;
         LoadedMeta.PropertyChanged += MetaInformation_PropertyChanged;
@@ -46,7 +59,7 @@ public partial class EditScriptMeta : UserControl
         OnDelete?.Invoke(sender, e);
     }
 
-    private void NightOrderView_OnPop(object? sender, SimpleEventArgs<UserControl, string> e)
+    private void NightOrderView_OnPop(object? sender, SimpleEventArgs<EditCharacter, string> e)
     {
         OnPop?.Invoke(sender, e);
     }

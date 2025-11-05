@@ -1,21 +1,19 @@
 using Avalonia.Controls;
 using Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures;
-using Clockmaker0.Data;
-using Pikcube.ReadWriteScript.Core;
 using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs;
 
-public partial class EditAppFeatures : UserControl, IDelete
+/// <inheritdoc />
+public partial class EditAppFeatures : UserControl
 {
-    private MutableCharacter LoadedCharacter { get; set; } = MutableCharacter.Default;
-    private MutableBotcScript LoadedScript { get; set; } = BotcScript.Default.ToMutable();
 
     private GeneralAppFeatures EditGeneralAppFeatures { get; }
     private NightSignalFeatures EditNightSignalFeatures { get; }
     private VotingFeatures EditVotingFeatures { get; }
     private GrimRevealFeatures EditGrimRevealFeatures { get; }
 
+    /// <inheritdoc />
     public EditAppFeatures()
     {
         InitializeComponent();
@@ -25,21 +23,17 @@ public partial class EditAppFeatures : UserControl, IDelete
         EditGrimRevealFeatures = new GrimRevealFeatures();
     }
 
-    public void Load(MutableCharacter loadedCharacter, MutableBotcScript loadedScript)
+    /// <summary>
+    /// Load the character data into the EditAppFeatures control
+    /// </summary>
+    /// <param name="loadedCharacter">The character to load</param>
+    public void Load(MutableCharacter loadedCharacter)
     {
-        LoadedCharacter = loadedCharacter;
-        LoadedScript = loadedScript;
         EditGeneralAppFeatures.Load(loadedCharacter.MutableAppFeatures);
         EditNightSignalFeatures.Load(loadedCharacter);
-        EditVotingFeatures.Load(loadedCharacter, loadedScript);
+        EditVotingFeatures.Load(loadedCharacter.MutableAppFeatures);
         EditGrimRevealFeatures.Load(loadedCharacter);
         LoadedMenuListBox.SelectedIndex = 0;
-    }
-
-
-    public void Delete()
-    {
-
     }
 
     private void SelectingItemsControl_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -67,6 +61,9 @@ public partial class EditAppFeatures : UserControl, IDelete
         }
     }
 
+    /// <summary>
+    /// Disable editting for read only characters
+    /// </summary>
     public void Lock()
     {
         EditGeneralAppFeatures.Lock();
@@ -75,6 +72,9 @@ public partial class EditAppFeatures : UserControl, IDelete
         EditGrimRevealFeatures.IsEnabled = false;
     }
 
+    /// <summary>
+    /// Enable editting for non readonly characters
+    /// </summary>
     public void Unlock()
     {
         EditGeneralAppFeatures.Unlock();

@@ -18,6 +18,9 @@ using Pikcube.ReadWriteScript.Offline;
 
 namespace Clockmaker0.Data;
 
+/// <summary>
+/// Responsible for loading, cacheing, unloading, modifying, and reloading any images that needs to be displayed as part of the loaded script
+/// </summary>
 public class ScriptImageLoader : IDisposable
 {
 
@@ -26,6 +29,9 @@ public class ScriptImageLoader : IDisposable
 
     private static Assembly ThisAssembly { get; } = Assembly.GetAssembly(typeof(ScriptImageLoader)) ?? throw new NoNullAllowedException();
 
+    /// <summary>
+    /// Increments every time a new image is set using SetImage. By checking this value over time, you can determine whether or not any changes have been made to the underlying images
+    /// </summary>
     public int Version => _version;
 
     private Func<string, Stream?> GetEntryStream { get; }
@@ -36,12 +42,25 @@ public class ScriptImageLoader : IDisposable
     private ConcurrentDictionary<string, Bitmap> LoadedImages { get; } = [];
     private static ConcurrentDictionary<string, Bitmap> OfficialImages { get; } = [];
     private static ConcurrentDictionary<(TeamEnum, int), Bitmap> DefaultImages { get; } = [];
+    /// <summary>
+    /// Default image loader, always returns null, can't set images. Useful for intitalizing controls prior to data being loaded.
+    /// </summary>
     public static ScriptImageLoader Default { get; } = new(_ => null);
 
+    /// <summary>
+    /// Raised when something when a loaded image has been changed. Controls that get images from the image loader can subscribe to this event to be notified that they may need to replace their loaded image with a new copy. 
+    /// </summary>
     public event EventHandler<KeyArgs>? ReloadImage;
-    public event EventHandler<ValueChangedArgs<string>>? BeforeFork;
+
+    /// <summary>
+    /// Raised after a character has been forked, useful for unlocking controls that are currently in read only mode.
+    /// </summary>
     public event EventHandler<ValueChangedArgs<MutableCharacter>>? OnFork;
 
+    /// <summary>
+    /// Create a Script Image Loader for a Zip Archive in the Clockmaker Format
+    /// </summary>
+    /// <param name="clockmakerArchive"></param>
     public ScriptImageLoader(ZipArchive clockmakerArchive)
     {
         DisposeAction = clockmakerArchive.Dispose;
@@ -62,7 +81,7 @@ public class ScriptImageLoader : IDisposable
         _version = 0;
     }
 
-    public ScriptImageLoader(Func<string, Stream?> getEntry, Func<string, Stream>? getSetEntry = null, Action? disposeAction = null)
+    private ScriptImageLoader(Func<string, Stream?> getEntry, Func<string, Stream>? getSetEntry = null, Action? disposeAction = null)
     {
         GetEntryStream = getEntry;
         GetSetEntryStream = getSetEntry;
@@ -73,12 +92,18 @@ public class ScriptImageLoader : IDisposable
         _version = 0;
     }
 
+    /// <summary>
+    /// Fallback to call dispose
+    /// </summary>
     ~ScriptImageLoader()
     {
         Dispose();
         _disposed = true;
     }
 
+    /// <summary>
+    /// Dispose of all the bitmaps
+    /// </summary>
     public void Dispose()
     {
         if (_disposed)
@@ -94,6 +119,12 @@ public class ScriptImageLoader : IDisposable
         GC.SuppressFinalize(this);
     }
 
+    /// <summary>
+    /// Get the image at the specified key
+    /// </summary>
+    /// <param name="key">The path to the image</param>
+    /// <param name="defaultPath">The fallback path (if we are working on a copy)</param>
+    /// <returns>The image or an error image</returns>
     public async Task<Bitmap> GetImageAsync(string key, string defaultPath)
     {
         if (LoadedImages.TryGetValue(key, out Bitmap? img))
@@ -154,6 +185,12 @@ public class ScriptImageLoader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Get an image from the loader based on its index
+    /// </summary>
+    /// <param name="c">The character</param>
+    /// <param name="index">The index into the image keys list</param>
+    /// <returns>The image or a default if it doesn't exist</returns>
     public async Task<Bitmap> GetImageAsync(ICharacter c, int index)
     {
         if (index < 0 || index >= c.Image.Count)
@@ -208,6 +245,11 @@ public class ScriptImageLoader : IDisposable
 
 
 
+    /// <summary>
+    /// Load an image into the cache without returning the Bitmap itself
+    /// </summary>
+    /// <param name="c">The image</param>
+    /// <param name="index">The index into the keys</param>
     public async Task GetCacheImageAsync(MutableCharacter c, int index)
     {
         if (index < 0 || index > c.Image.Count)
@@ -307,8 +349,7 @@ public class ScriptImageLoader : IDisposable
         }
     }
 
-    [UsedImplicitly]
-    public static Bitmap GetDefault(TeamEnum? cTeam, int index)
+    private static Bitmap GetDefault(TeamEnum? cTeam, int index)
     {
         cTeam ??= TeamEnum.Fabled;
 
@@ -328,6 +369,9 @@ public class ScriptImageLoader : IDisposable
 
     }
 
+    /// <summary>
+    /// Raise the reload image event for the default icons
+    /// </summary>
     public void ReloadDefault()
     {
         ReloadImage?.Invoke(this, new KeyArgs
@@ -336,9 +380,15 @@ public class ScriptImageLoader : IDisposable
         });
     }
 
+    /// <summary>
+    /// Create a copy of an official character with a mutated ID
+    /// </summary>
+    /// <param name="c">The character to fork</param>
+    /// <param name="script">The script they are on</param>
+    /// <param name="newId">The new character id (will append _new if it exists)</param>
+    /// <exception cref="InvalidOperationException">Raised if the character is not an Official Character</exception>
     public async Task ForkAsync(MutableCharacter c, MutableBotcScript script, string newId)
     {
-        BeforeFork?.Invoke(c, new ValueChangedArgs<string>(c.Id));
         Character oldCharacter = c.ToImmutable();
 
         if (!ScriptParse.IsOfficial(c.Id))
@@ -353,7 +403,7 @@ public class ScriptImageLoader : IDisposable
 
         if (c.Image == null)
         {
-            throw new NoNullAllowedException();
+            throw new Exception("Official character has no images, this is normally impossible unless Pikcube screwed up his archive file");
         }
 
         while (script.Characters.Any(character => character.Id == newId))
@@ -383,12 +433,28 @@ public class ScriptImageLoader : IDisposable
         OnFork?.Invoke(c, new ValueChangedArgs<MutableCharacter>(c));
     }
 
+    /// <summary>
+    /// Set the image in the image loader if the image repo is writable
+    /// </summary>
+    /// <param name="c">The character</param>
+    /// <param name="index">The index to replace</param>
+    /// <param name="file">The file</param>
+    /// <param name="format">The file format</param>
+    /// <returns>True if the write succeeded</returns>
     public async Task<bool> TrySetImageAsync(MutableCharacter c, int index, IStorageFile file, MagickFormat format)
     {
         await using Stream openReadAsync = await file.OpenReadAsync();
         return await TrySetImageAsync(c, index, openReadAsync.CopyToAsync, format);
     }
 
+    /// <summary>
+    /// Set the image in the imgae loader if the image repo is writable
+    /// </summary>
+    /// <param name="c">The character</param>
+    /// <param name="index">The index to replace</param>
+    /// <param name="copyToAsync">A function that takes a copy target as a parameter and copies the image to the target stream (useful for Bitmat.Save)</param>
+    /// <param name="format">The file format</param>
+    /// <returns>True if the write succeeded</returns>
     public async Task<bool> TrySetImageAsync(MutableCharacter c, int index, Func<Stream, Task> copyToAsync, MagickFormat format)
     {
         if (GetSetEntryStream is null || index < 0)
@@ -404,12 +470,26 @@ public class ScriptImageLoader : IDisposable
         return await TrySetImageAsync(c.Image[index], copyToAsync, format);
     }
 
+    /// <summary>
+    /// Set the image in the imgae loader if the image repo is writable
+    /// </summary>
+    /// <param name="path">The path to the image in the loader</param>
+    /// <param name="file">The file</param>
+    /// <param name="format">The file format</param>
+    /// <returns>True if the write succeeded</returns>
     public async Task<bool> TrySetImageAsync(string path, IStorageFile file, MagickFormat format)
     {
         await using Stream openReadAsync = await file.OpenReadAsync();
         return await TrySetImageAsync(path, openReadAsync.CopyToAsync, format);
     }
 
+    /// <summary>
+    /// Set the image in the imgae loader if the image repo is writable
+    /// </summary>
+    /// <param name="path">The path to the image in the loader</param>
+    /// <param name="copyToAsync">A function that takes a copy target as a parameter and copies the image to the target stream (useful for Bitmat.Save)</param>
+    /// <param name="format">The file format</param>
+    /// <returns>True if the write succeeded</returns>
     [UsedImplicitly]
     public async Task<bool> TrySetImageAsync(string path, Func<Stream, Task> copyToAsync, MagickFormat format)
     {
@@ -467,8 +547,16 @@ public class ScriptImageLoader : IDisposable
         return bmp;
     }
 
+    /// <summary>
+    /// Check if the cached version number matches the current version number
+    /// </summary>
+    /// <param name="imageVersion">The cached version number</param>
+    /// <returns>True if the images have been modified, false otherwise</returns>
     public bool IsChanged(int imageVersion) => imageVersion != _version;
 
+    /// <summary>
+    /// Force all controls to fetch a new image from the loader
+    /// </summary>
     public void ReloadAll()
     {
         ReloadImage?.Invoke(this, new KeyArgs
@@ -478,7 +566,11 @@ public class ScriptImageLoader : IDisposable
     }
 }
 
+/// <inheritdoc />
 public class KeyArgs : EventArgs
 {
+    /// <summary>
+    /// The path to the image in the archive
+    /// </summary>
     public required string? Key { get; init; }
 }

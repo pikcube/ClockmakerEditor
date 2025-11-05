@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="32"
+			 Height="29"
+			 x:Class="Clockmaker0.Printing.PrintCharacterPreview">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="50"/>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="100"/>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="640"/>
+			<ColumnDefinition Width="10"/>
+		</Grid.ColumnDefinitions>
+		<Image Grid.Column="1"
+			   x:Name="CharacterImage"
+			   Width="50"
+			   Height="50"/>
+		<TextBlock Grid.Column="3"
+				   Text="loading..."
+				   Foreground="Black"
+				   HorizontalAlignment="Left"
+				   VerticalAlignment="Center"
+				   TextWrapping="Wrap"
+				   FontFamily="Century Gothic"
+				   x:Name="NameTextBlock"
+				   FontSize="12"/>
+		<TextBlock Grid.Column="5" Text="loading..."
+				   Foreground="Black"
+				   HorizontalAlignment="Left"
+				   FontFamily="Century Gothic"
+				   VerticalAlignment="Center"
+				   TextWrapping="Wrap"
+				   x:Name="AbilityTextBlock"
+				   FontSize="10"
+				   />
+
+	</Grid>
+</UserControl>

@@ -4,7 +4,7 @@
 #include "CodeDependencies.iss"
 
 #define MyAppName "Clockmaker Beta"
-#define MyAppVersion "0.1.0.5"
+#define MyAppVersion "0.1.0.7"
 #define MyAppPublisher "Pikcube"
 #define MyAppURL "https://clockmaker.pikcube.com/beta/"
 #define MyAppExeName "Clockmaker0.exe"
@@ -40,8 +40,6 @@ OutputBaseFilename=clockmakerBetaInstaller
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
-
-
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

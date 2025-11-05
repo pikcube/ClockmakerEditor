@@ -12,16 +12,23 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditMetaControls.Tabs;
 
+/// <inheritdoc />
 public partial class CustomBackground : UserControl
 {
     private MutableMeta LoadedMeta { get; set; } = MutableMeta.Default;
     private ScriptImageLoader Loader { get; set; } = ScriptImageLoader.Default;
 
+    /// <inheritdoc />
     public CustomBackground()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the current custom background and initialize the relevant events. May only be called once.
+    /// </summary>
+    /// <param name="loadedMeta">The meta containing the background</param>
+    /// <param name="loader">The image loader for the script</param>
     public void Load(MutableMeta loadedMeta, ScriptImageLoader loader)
     {
         LoadedMeta = loadedMeta;

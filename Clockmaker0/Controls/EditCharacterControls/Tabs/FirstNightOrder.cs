@@ -2,13 +2,22 @@
 using Avalonia.Controls;
 using Clockmaker0.Data;
 using Pikcube.ReadWriteScript.Core.Mutable;
+using Pikcube.ReadWriteScript.Offline;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs
 {
+    /// <summary>
+    /// A complete implementation of AbstractNightOrder to show the night order on night 1
+    /// </summary>
     public class FirstNightOrder : AbstractNightOrder
     {
-        public void Load(MutableCharacter loadedCharacter, MutableBotcScript loadedScript,
-            ScriptImageLoader loader)
+        /// <summary>
+        /// Load the character and script into the first night order control
+        /// </summary>
+        /// <param name="loadedCharacter">The character to load</param>
+        /// <param name="loadedScript">The script to load</param>
+        /// <param name="loader">The image loader</param>
+        public void Load(MutableCharacter loadedCharacter, MutableBotcScript loadedScript, ScriptImageLoader loader)
         {
             base.Load(loadedCharacter, loadedScript, loader, loadedScript.Meta.FirstNight.Contains(loadedCharacter), loadedScript.Meta.FirstNight, loadedCharacter.FirstNightReminder);
 
@@ -16,8 +25,10 @@ namespace Clockmaker0.Controls.EditCharacterControls.Tabs
         }
 
 
+        /// <inheritdoc />
         protected override string? GetReminder(MutableCharacter character) => character.FirstNightReminder;
 
+        /// <inheritdoc />
         protected override void LoadedCharacter_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             AbstractNightReminderTextBox.Text = e.PropertyName switch
@@ -27,16 +38,13 @@ namespace Clockmaker0.Controls.EditCharacterControls.Tabs
             };
         }
 
-        protected override double? GetNightIndex(MutableCharacter mutableCharacter) => mutableCharacter.FirstNight;
-
-        protected override void SetNightIndex(MutableCharacter loadedCharacter, double? i)
-        {
-            loadedCharacter.FirstNight = i;
-        }
-
+        /// <inheritdoc />
         protected override void AbstractNightReminderTextBox_OnTextChanged(object? sender, TextChangedEventArgs e)
         {
             LoadedCharacter.FirstNightReminder = AbstractNightReminderTextBox.Text;
         }
+
+        /// <inheritdoc />
+        protected override string[] NightIndexes => ScriptParse.FirstNightOrderIds;
     }
 }

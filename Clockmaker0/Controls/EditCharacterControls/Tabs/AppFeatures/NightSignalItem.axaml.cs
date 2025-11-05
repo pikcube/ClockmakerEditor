@@ -1,18 +1,36 @@
-using System.ComponentModel;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Clockmaker0.Data;
 using Pikcube.ReadWriteScript.Core.Mutable;
+using System.ComponentModel;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Base;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures;
 
-public partial class NightSignalItem : UserControl
+/// <summary>
+/// Control for editting a single night signal
+/// </summary>
+public partial class NightSignalItem : UserControl, ILock
 {
-    public MutableSignal LoadedSignal { get; set; } = new("");
+    /// <summary>
+    /// The currently loaded signal
+    /// </summary>
+    public MutableSignal LoadedSignal { get; private set; } = new("");
+
+    /// <inheritdoc />
     public NightSignalItem()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the siganl data. May only be called once
+    /// </summary>
+    /// <param name="signal">The signal to load</param>
     public void Load(MutableSignal signal)
     {
         LoadedSignal = signal;
@@ -76,15 +94,41 @@ public partial class NightSignalItem : UserControl
 
     private void DeleteButton_Click(object? sender, RoutedEventArgs e)
     {
-        LoadedSignal.Delete();
+        TaskManager.ScheduleTask(async () =>
+        {
+            if (!App.IsKeyDown(Key.RightShift, Key.LeftShift))
+            {
+                MessageBoxStandardParams messageBoxStandardParams = new()
+                {
+                    ButtonDefinitions = ButtonEnum.YesNo,
+                    ContentTitle = "Confirm Delete",
+                    ContentMessage = "Are you sure you want to delete this signal?",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.Width
+                };
+                IMsBox<ButtonResult> msg = MessageBoxManager.GetMessageBoxStandard(messageBoxStandardParams);
+
+
+                ButtonResult result = TopLevel.GetTopLevel(this) is Window window
+                    ? await msg.ShowWindowDialogAsync(window)
+                    : await msg.ShowAsPopupAsync(this);
+
+                if (result != ButtonResult.Yes)
+                {
+                    return;
+                }
+            }
+
+            LoadedSignal.Delete();
+        });
     }
 
     private void ExpandButton_Click(object? sender, RoutedEventArgs e)
     {
         TimeScopeGrid.IsVisible = !TimeScopeGrid.IsVisible;
-        DeleteButton.IsVisible = !DeleteButton.IsVisible;
     }
 
+    /// <inheritdoc />
     public void Lock()
     {
         SignalTextBox.IsEnabled = false;
@@ -93,6 +137,7 @@ public partial class NightSignalItem : UserControl
         DeleteButton.IsEnabled = false;
     }
 
+    /// <inheritdoc />
     public void Unlock()
     {
         SignalTextBox.IsEnabled = true;

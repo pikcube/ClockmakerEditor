@@ -16,6 +16,9 @@ using Pikcube.ReadWriteScript.Offline;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs;
 
+/// <summary>
+/// Control for editting a jinx
+/// </summary>
 public partial class EditJinx : UserControl, IDelete
 {
     private MutableJinx LoadedJinx { get; set; } = new("", Character.Default.Id, Character.Default.Id);
@@ -23,12 +26,23 @@ public partial class EditJinx : UserControl, IDelete
 
     private List<ICharacter> Source { get; set; } = [];
 
+    /// <summary>
+    /// Raised when this control is to be deleted, so the caller can detach it from the visual tree.
+    /// </summary>
+    public event EventHandler<SimpleEventArgs<EditJinx>>? OnDelete;
+
+    /// <inheritdoc />
     public EditJinx()
     {
         InitializeComponent();
     }
 
-    public void Load(MutableJinx jinx, Func<EditJinx, bool> onDelete, MutableBotcScript loadedScript)
+    /// <summary>
+    /// Load the jinx data into the control for editting
+    /// </summary>
+    /// <param name="jinx">The jinx to load</param>
+    /// <param name="loadedScript">The script the jinx belongs to</param>
+    public void Load(MutableJinx jinx, MutableBotcScript loadedScript)
     {
         LoadedJinx = jinx;
         LoadedScript = loadedScript;
@@ -46,7 +60,7 @@ public partial class EditJinx : UserControl, IDelete
 
         jinx.OnDelete += (_, _) =>
         {
-            onDelete(this);
+            OnDelete?.Invoke(this, new SimpleEventArgs<EditJinx>(this));
         };
         jinx.PropertyChanged += Jinx_PropertyChanged;
         JinxTextBox.TextChanged += JinxTextBoxTextChanged;
@@ -211,7 +225,7 @@ public partial class EditJinx : UserControl, IDelete
             if (!App.IsKeyDown(Key.RightShift, Key.LeftShift))
             {
                 IMsBox<ButtonResult> msg = MessageBoxManager.GetMessageBoxStandard("Confirm Delete",
-                    "Are you sure you want to delete this reminder?", ButtonEnum.YesNo);
+                    "Are you sure you want to delete this jinx?", ButtonEnum.YesNo);
 
                 ButtonResult result = TopLevel.GetTopLevel(this) is Window window
                     ? await msg.ShowWindowDialogAsync(window)
@@ -227,16 +241,29 @@ public partial class EditJinx : UserControl, IDelete
         });
     }
 
+    /// <inheritdoc />
     public void Delete()
     {
         LoadedJinx.Delete();
     }
 
+    /// <summary>
+    /// Source of the jinx
+    /// </summary>
     [Flags]
     public enum CharacterSource
     {
+        /// <summary>
+        /// Can't find the source
+        /// </summary>
         NotFound = 0,
+        /// <summary>
+        /// On Script Character
+        /// </summary>
         Script = 1,
+        /// <summary>
+        /// In the Official Repo
+        /// </summary>
         Official = 2,
     }
 }

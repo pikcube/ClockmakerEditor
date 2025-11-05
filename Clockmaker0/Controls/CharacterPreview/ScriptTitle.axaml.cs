@@ -1,31 +1,50 @@
-using System;
-using System.ComponentModel;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Clockmaker0.Controls.EditCharacterControls;
 using Clockmaker0.Controls.EditMetaControls;
 using Clockmaker0.Data;
 using Pikcube.ReadWriteScript.Core;
 using Pikcube.ReadWriteScript.Core.Mutable;
+using System;
+using System.ComponentModel;
 
 namespace Clockmaker0.Controls.CharacterPreview;
 
-public partial class ScriptTitle : UserControl
+/// <summary>
+/// Script item for the script's title
+/// </summary>
+public partial class ScriptTitle : UserControl, IOnPop, IOnDelete
 {
-    private EditScriptMeta? _meta;
     private MutableBotcScript LoadedScript { get; set; } = BotcScript.Default.ToMutable();
     private MutableMeta LoadedMeta { get; set; } = MutableMeta.Default;
     private ScriptImageLoader Loader { get; set; } = ScriptImageLoader.Default;
-    public event EventHandler<SimpleEventArgs<UserControl, string>>? OnPop;
+
+    /// <inheritdoc />
+    public event EventHandler<SimpleEventArgs<EditCharacter, string>>? OnPop;
+
+    /// <inheritdoc />
     public event EventHandler<SimpleEventArgs<MutableCharacter>>? OnDelete;
+    /// <summary>
+    /// Raised when the Expand Button is clicked
+    /// </summary>
     public event EventHandler<SimpleEventArgs<UserControl>>? OnLoadEdit;
+    /// <summary>
+    /// Raised when a new character is added to the script
+    /// </summary>
     public event EventHandler<SimpleEventArgs<UserControl>>? OnAddCharacter;
 
+    /// <inheritdoc />
     public ScriptTitle()
     {
         InitializeComponent();
         IsEnabled = false;
     }
 
+    /// <summary>
+    /// Load the current script info
+    /// </summary>
+    /// <param name="script">The script</param>
+    /// <param name="loader">The image loader</param>
     public void Load(MutableBotcScript script, ScriptImageLoader loader)
     {
         LoadedScript = script;
@@ -68,18 +87,15 @@ public partial class ScriptTitle : UserControl
 
     private void ExpandButton_OnClick(object? sender, RoutedEventArgs e)
     {
-        if (_meta is null)
-        {
-            _meta = new EditScriptMeta();
-            _meta.Load(LoadedScript, Loader);
-            _meta.OnDelete += Meta_OnDelete;
-            _meta.OnPop += Meta_OnPop;
-        }
+        EditScriptMeta meta = new EditScriptMeta();
+        meta.Load(LoadedScript, Loader);
+        meta.OnDelete += Meta_OnDelete;
+        meta.OnPop += Meta_OnPop;
 
-        OnLoadEdit?.Invoke(this, new SimpleEventArgs<UserControl>(_meta));
+        OnLoadEdit?.Invoke(this, new SimpleEventArgs<UserControl>(meta));
     }
 
-    private void Meta_OnPop(object? sender, SimpleEventArgs<UserControl, string> e)
+    private void Meta_OnPop(object? sender, SimpleEventArgs<EditCharacter, string> e)
     {
         OnPop?.Invoke(sender, e);
     }

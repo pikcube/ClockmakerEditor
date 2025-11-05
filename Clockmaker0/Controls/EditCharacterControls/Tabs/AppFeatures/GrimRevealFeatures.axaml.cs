@@ -5,10 +5,14 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures;
 
+/// <summary>
+/// Control for enabling swap in grimoire
+/// </summary>
 public partial class GrimRevealFeatures : UserControl
 {
     private MutableAppFeatures LoadedAppFeatures { get; set; } = new(MutableCharacter.Default);
 
+    /// <inheritdoc />
     public GrimRevealFeatures()
     {
         InitializeComponent();
@@ -19,6 +23,10 @@ public partial class GrimRevealFeatures : UserControl
                                     """;
     }
 
+    /// <summary>
+    /// Load the character in, may only be called once
+    /// </summary>
+    /// <param name="loadedCharacter">The character to load</param>
     public void Load(MutableCharacter loadedCharacter)
     {
         LoadedAppFeatures = loadedCharacter.MutableAppFeatures;

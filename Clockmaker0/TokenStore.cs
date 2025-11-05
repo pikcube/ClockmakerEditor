@@ -6,24 +6,43 @@ using System.IO;
 
 namespace Clockmaker0;
 
-public static class TokenStore
+/// <summary>
+/// Static class for loading and unloading github tokens from disk
+/// </summary>
+internal static class TokenStore
 {
-    public static void SaveTokenData(TokenData data)
+    /// <summary>
+    /// Save the current token data to disk
+    /// </summary>
+    /// <param name="data">The token data to save</param>
+    internal static void SaveTokenData(TokenData data)
     {
         using SecretsManager sm = LoadOrCreate(out string path);
-        sm.Set("token", JsonConvert.SerializeObject(data));
+        string serializeObject = JsonConvert.SerializeObject(data, Formatting.Indented, new JsonSerializerSettings
+        {
+            NullValueHandling = NullValueHandling.Include
+        });
+        sm.Set("token", serializeObject);
         sm.SaveStore(path);
     }
 
 
-    public static void DeleteTokenData()
+    /// <summary>
+    /// Delete the token from the token store
+    /// </summary>
+    internal static void DeleteTokenData()
     {
         using SecretsManager sm = LoadOrCreate(out string path);
         sm.Delete("token");
         sm.SaveStore(path);
     }
 
-    public static bool TryGetTokenData(out TokenData data)
+    /// <summary>
+    /// Try to get the current token data from disk
+    /// </summary>
+    /// <param name="data">The intitialized token data from disk, or an empty object if it doesn't</param>
+    /// <returns>True if the object exists on disk, false otherwise</returns>
+    internal static bool TryGetTokenData(out TokenData data)
     {
         data = new TokenData();
         using SecretsManager sm = LoadOrCreate(out _);
@@ -48,7 +67,10 @@ public static class TokenStore
 
     }
 
-    public static void RotateSecrets()
+    /// <summary>
+    /// Generate a new encryption key and write it to disk
+    /// </summary>
+    internal static void RotateSecrets()
     {
         SecretsManager sm = LoadOrCreate(out string path);
         if (!sm.TryGetValue("token", out string? tokenData))

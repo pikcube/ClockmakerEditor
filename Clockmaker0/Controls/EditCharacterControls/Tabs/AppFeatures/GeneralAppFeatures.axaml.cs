@@ -1,17 +1,26 @@
 using Avalonia.Controls;
+using Clockmaker0.Data;
 using Pikcube.ReadWriteScript.Core.Mutable;
 using Pikcube.ReadWriteScript.Core.Special;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures;
 
-public partial class GeneralAppFeatures : UserControl
+/// <summary>
+/// The meta control for editting the generic app features
+/// </summary>
+public partial class GeneralAppFeatures : UserControl, ILock
 {
+    /// <inheritdoc />
     public GeneralAppFeatures()
     {
         InitializeComponent();
         Panel.Spacing = 10;
     }
 
+    /// <summary>
+    /// Load in the current App Features. May only be called once
+    /// </summary>
+    /// <param name="features">The features to load</param>
     public void Load(MutableAppFeatures features)
     {
         DistributeRolesFeature.Load("Manually Distribute Roles", features.AbilityDistributeRoles, "Example: Gardener", new ScopeTimes { None = TimeOfDay.Pregame });
@@ -35,6 +44,7 @@ public partial class GeneralAppFeatures : UserControl
         OpenEyesFeature.TimeScopeGrid.ShowHideColumn(4, false);
     }
 
+    /// <inheritdoc />
     public void Lock()
     {
         DistributeRolesFeature.Lock();
@@ -44,6 +54,7 @@ public partial class GeneralAppFeatures : UserControl
         OpenEyesFeature.Lock();
     }
 
+    /// <inheritdoc />
     public void Unlock()
     {
         DistributeRolesFeature.Unlock();

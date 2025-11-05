@@ -10,13 +10,17 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Root;
 
-public partial class BasicCharacterInfo : UserControl
+/// <summary>
+/// Composite control that lets you edit a character's basic info
+/// </summary>
+public partial class BasicCharacterInfo : UserControl, IDelete
 {
     private MutableCharacter LoadedCharacter { get; set; } = MutableCharacter.Default;
 
     private BotcScript LoadedScript { get; set; } = BotcScript.Default;
     private static SortEnumBox[] SortIndex { get; } = [.. Enum.GetValues<SortType>()[1..].Select(st => new SortEnumBox(st))];
 
+    /// <inheritdoc />
     public BasicCharacterInfo()
     {
         InitializeComponent();
@@ -201,6 +205,11 @@ public partial class BasicCharacterInfo : UserControl
         LoadedCharacter.Edition = LoadedScript.Meta.Name;
     }
 
+    /// <summary>
+    /// Load the character into the basic character editor. May only be called once
+    /// </summary>
+    /// <param name="loadedCharacter">The character to load</param>
+    /// <param name="loadedScript">The containing script</param>
     public void Load(MutableCharacter loadedCharacter, BotcScript loadedScript)
     {
         LoadedScript = loadedScript;
@@ -220,12 +229,11 @@ public partial class BasicCharacterInfo : UserControl
 
     private void MutableAppFeaturesPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        switch (e.PropertyName)
+        BagOptionsComboBox.SelectedIndex = e.PropertyName switch
         {
-            case nameof(LoadedCharacter.MutableAppFeatures.Selection):
-                BagOptionsComboBox.SelectedIndex = (int)LoadedCharacter.MutableAppFeatures.Selection;
-                break;
-        }
+            nameof(LoadedCharacter.MutableAppFeatures.Selection) => (int)LoadedCharacter.MutableAppFeatures.Selection,
+            _ => BagOptionsComboBox.SelectedIndex
+        };
     }
 
     private void LoadedCharacter_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -253,6 +261,7 @@ public partial class BasicCharacterInfo : UserControl
         }
     }
 
+    /// <inheritdoc />
     public void Delete()
     {
         LoadedCharacter.PropertyChanged -= LoadedCharacter_PropertyChanged;

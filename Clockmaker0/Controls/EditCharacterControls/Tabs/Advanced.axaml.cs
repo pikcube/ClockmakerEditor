@@ -11,6 +11,10 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs;
 
+
+/// <summary>
+/// Allow direct json editting
+/// </summary>
 public partial class Advanced : UserControl, IDelete
 {
     private MutableCharacter LoadedCharacter { get; set; } = MutableCharacter.Default;
@@ -18,12 +22,19 @@ public partial class Advanced : UserControl, IDelete
 
     private ScriptImageLoader Loader { get; set; } = ScriptImageLoader.Default;
 
+    /// <inheritdoc />
     public Advanced()
     {
         InitializeComponent();
 
     }
 
+    /// <summary>
+    /// Load the current advanced character editor for direct json editting
+    /// </summary>
+    /// <param name="loadedCharacter">The character to edit</param>
+    /// <param name="loadedScript">Their parent script</param>
+    /// <param name="loader">The image loader</param>
     public void Load(MutableCharacter loadedCharacter, MutableBotcScript loadedScript, ScriptImageLoader loader)
     {
         LoadedCharacter = loadedCharacter;
@@ -95,16 +106,23 @@ public partial class Advanced : UserControl, IDelete
         CharacterJson.Text = JsonConvert.SerializeObject(LoadedCharacter.ToImmutable(LoadedScript.Jinxes), Formatting.Indented);
     }
 
+    /// <inheritdoc />
     public void Delete()
     {
         LoadedCharacter.PropertyChanged -= LoadedCharacter_PropertyChanged;
     }
 
+    /// <summary>
+    /// Unlock the control after it is forked
+    /// </summary>
     public void Unlock()
     {
         EditButton.IsEnabled = true;
     }
 
+    /// <summary>
+    /// Lock a character from the official repo
+    /// </summary>
     public void Lock()
     {
         EditButton.IsEnabled = false;

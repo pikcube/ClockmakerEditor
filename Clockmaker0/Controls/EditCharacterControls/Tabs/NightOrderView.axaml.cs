@@ -12,19 +12,35 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs;
 
-public partial class NightOrderView : UserControl
+/// <summary>
+/// The full night order view
+/// </summary>
+public partial class NightOrderView : UserControl, IOnDelete, IOnPop
 {
     private TrackedList<MutableCharacter> LoadedList { get; set; } = [];
-    protected MutableBotcScript LoadedScript { get; private set; } = BotcScript.Default.ToMutable();
+    private MutableBotcScript LoadedScript { get; set; } = BotcScript.Default.ToMutable();
     private ScriptImageLoader Loader { get; set; } = ScriptImageLoader.Default;
+
+    /// <inheritdoc />
     public event EventHandler<SimpleEventArgs<MutableCharacter>>? OnDelete;
-    public event EventHandler<SimpleEventArgs<UserControl, string>>? OnPop;
+
+    /// <inheritdoc />
+    public event EventHandler<SimpleEventArgs<EditCharacter, string>>? OnPop;
     private Func<MutableCharacter, string?> GetReminder { get; set; } = _ => null;
+
+    /// <inheritdoc />
     public NightOrderView()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the current night order
+    /// </summary>
+    /// <param name="loadedList">The night order list</param>
+    /// <param name="loadedScript">The loaded script</param>
+    /// <param name="loader">The image loader</param>
+    /// <param name="getReminder">A function that gets the reminder text for a given character</param>
     public void Load(TrackedList<MutableCharacter> loadedList, MutableBotcScript loadedScript, ScriptImageLoader loader, Func<MutableCharacter, string?> getReminder)
     {
         LoadedList = loadedList;
@@ -39,6 +55,9 @@ public partial class NightOrderView : UserControl
         LoadedList.OrderChanged += LoadedList_OrderChanged;
     }
 
+    /// <summary>
+    /// Called when the control is deleted
+    /// </summary>
     public void Delete()
     {
         LoadedList.ItemAdded -= LoadedList_ItemAdded;
@@ -62,12 +81,12 @@ public partial class NightOrderView : UserControl
         RegenerateTreeViews();
     }
 
-    public void InitTreeViews()
+    private void InitTreeViews()
     {
         AbstractNightTreeView.ItemsSource = LoadedList.Select(CreateNightOrderPreview);
     }
 
-    public void RegenerateTreeViews()
+    private void RegenerateTreeViews()
     {
         AbstractNightTreeView.ItemsSource = LoadedList.Select(GetOrCreatePreview);
     }
@@ -92,7 +111,7 @@ public partial class NightOrderView : UserControl
         return item;
     }
 
-    public void ReorderTreeViews()
+    private void ReorderTreeViews()
     {
         AbstractNightTreeView.ItemsSource = AbstractNightTreeView.ItemsSource?.OfType<NightOrderPreview>()
             .OrderBy(nop => LoadedList.IndexOf(nop.LoadedCharacter));
@@ -110,12 +129,12 @@ public partial class NightOrderView : UserControl
             edit.Load(character, Loader, LoadedScript, await Loader.GetImageAsync(character, 0));
             edit.OnDelete += Edit_OnDelete;
             edit.OnPop += Edit_OnPop;
-            OnPop?.Invoke(this, new SimpleEventArgs<UserControl, string>(edit, $"Edit {character.Name}"));
+            OnPop?.Invoke(this, new SimpleEventArgs<EditCharacter, string>(edit, $"Edit {character.Name}"));
 
         });
     }
 
-    private void Edit_OnPop(object? sender, SimpleEventArgs<UserControl, string> e)
+    private void Edit_OnPop(object? sender, SimpleEventArgs<EditCharacter, string> e)
     {
         OnPop?.Invoke(this, e);
     }
@@ -137,7 +156,7 @@ public partial class NightOrderView : UserControl
             return;
         }
 
-        CustomDataTransfer<NightOrderDrag> cdt = new(new NightOrderDrag(nop, character, list), JsonConvert.SerializeObject(character.ToImmutable(LoadedScript.Jinxes), Formatting.Indented));
+        CustomDataTransfer<NightOrderDrag> cdt = new(new NightOrderDrag(nop, list), JsonConvert.SerializeObject(character.ToImmutable(LoadedScript.Jinxes), Formatting.Indented));
 
         TaskManager.ScheduleAsyncTask(async () =>
         {

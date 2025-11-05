@@ -12,16 +12,23 @@ using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditMetaControls.Tabs;
 
+/// <inheritdoc />
 public partial class CustomLogo : UserControl
 {
     private MutableMeta LoadedMeta { get; set; } = MutableMeta.Default;
     private ScriptImageLoader Loader { get; set; } = ScriptImageLoader.Default;
 
+    /// <inheritdoc />
     public CustomLogo()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the option to edit a custom logo
+    /// </summary>
+    /// <param name="loadedMeta">The meta object containing the logo</param>
+    /// <param name="loader">The image loader</param>
     public void Load(MutableMeta loadedMeta, ScriptImageLoader loader)
     {
         LoadedMeta = loadedMeta;

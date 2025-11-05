@@ -14,36 +14,75 @@ using Pikcube.ReadWriteScript.Offline;
 
 namespace Clockmaker0.Controls.EditCharacterControls;
 
-public partial class EditCharacter : UserControl
+
+/// <summary>
+/// Meta Control for Editting a Character
+/// </summary>
+public partial class EditCharacter : UserControl, INamedControl<EditCharacter>
 {
+    /// <summary>
+    /// The Currently Loaded Character
+    /// </summary>
     public MutableCharacter LoadedCharacter { get; private set; } = MutableCharacter.Default;
     private ScriptImageLoader ImageLoader { get; set; } = ScriptImageLoader.Default;
-    private MutableBotcScript LoadedScript { get; set; } = new(BotcScript.Default, ScriptParse.GetOfficialCharacters);
-    public event EventHandler<SimpleEventArgs<MutableCharacter>>? OnDelete;
-    public event EventHandler<SimpleEventArgs<UserControl, string>>? OnPop;
+    private MutableBotcScript LoadedScript { get; set; } = new(BotcScript.Default, ScriptParse.Base);
 
+    /// <inheritdoc />
+    public EditCharacter Control => this;
+
+    /// <inheritdoc />
+    public string ControlName => $"Edit {LoadedCharacter.Name}";
+
+    /// <inheritdoc />
+    public event EventHandler<string>? NameChanged;
+    /// <summary>
+    /// Raised when a character is to be deleted from the script. MainWindow is responsible for listening to this event and updating the UI
+    /// </summary>
+    public event EventHandler<SimpleEventArgs<MutableCharacter>>? OnDelete;
+    /// <summary>
+    /// Raised when a control is popped out into a separate window
+    /// </summary>
+    public event EventHandler<SimpleEventArgs<EditCharacter, string>>? OnPop;
+
+    /// <inheritdoc />
     public EditCharacter()
     {
         InitializeComponent();
     }
 
-    public void Load(MutableCharacter loadedCharacter, ScriptImageLoader loader, MutableBotcScript loadedScript, IImage icon)
+    /// <summary>
+    /// Load the character data into the edit character control. This may only be called once
+    /// </summary>
+    /// <param name="loadedCharacter">The character to load</param>
+    /// <param name="loader">The script image loader</param>
+    /// <param name="loadedScript">The script the character is from</param>
+    /// <param name="icon">A copy of the current image, or null if one needs to be loaded</param>
+    public void Load(MutableCharacter loadedCharacter, ScriptImageLoader loader, MutableBotcScript loadedScript, IImage? icon = null)
     {
         LoadedCharacter = loadedCharacter;
+        LoadedCharacter.PropertyChanged += LoadedCharacter_PropertyChanged;
         LoadedScript = loadedScript;
+
         ImageLoader = loader;
         ImagePicker.Load(loadedCharacter, loader, icon);
         ImagePicker.OnDelete += RaiseOnDelete;
+
         BasicCharacterInfo.Load(loadedCharacter, loadedScript);
+
         RemindersTab.Load(loadedCharacter);
+
         FirstNightOrderTab.Load(loadedCharacter, loadedScript, loader);
         FirstNightOrderTab.OnDelete += RaiseOnDelete;
         FirstNightOrderTab.OnPop += RaiseOnPop;
+
         OtherNightOrderTab.Load(loadedCharacter, loadedScript, loader);
         OtherNightOrderTab.OnDelete += RaiseOnDelete;
         OtherNightOrderTab.OnPop += RaiseOnPop;
-        AppFeaturesTab.Load(loadedCharacter, loadedScript);
+
+        AppFeaturesTab.Load(loadedCharacter);
+
         JinxesTab.Load(loadedCharacter, loadedScript);
+
         AdvancedTab.Load(loadedCharacter, loadedScript, loader);
 
         if (ScriptParse.IsOfficial(loadedCharacter.Id))
@@ -56,7 +95,7 @@ public partial class EditCharacter : UserControl
             AppFeaturesTab.Lock();
             JinxesTab.IsEnabled = false;
             AdvancedTab.Lock();
-            ReadOnlyLock.Load(ForkAsync, loadedCharacter.Id, loader);
+            ReadOnlyLock.OnFork += (_, _) => TaskManager.ScheduleAsyncTask(async () => await ForkAsync());
             loader.OnFork += OnFork;
         }
         else
@@ -68,7 +107,17 @@ public partial class EditCharacter : UserControl
         loadedScript.Characters.ItemRemoved += Characters_ItemRemoved;
     }
 
-    private void RaiseOnPop(object? sender, SimpleEventArgs<UserControl, string> e)
+    private void LoadedCharacter_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(LoadedCharacter.Name):
+                NameChanged?.Invoke(this, ControlName);
+                return;
+        }
+    }
+
+    private void RaiseOnPop(object? sender, SimpleEventArgs<EditCharacter, string> e)
     {
         OnPop?.Invoke(sender, e);
     }
@@ -93,6 +142,7 @@ public partial class EditCharacter : UserControl
         AppFeaturesTab.Unlock();
         JinxesTab.IsEnabled = true;
         AdvancedTab.Unlock();
+        ReadOnlyLock.Delete();
     }
 
     private async Task ForkAsync()
@@ -201,7 +251,10 @@ public partial class EditCharacter : UserControl
         }
     }
 
-    public void Delete()
+    /// <summary>
+    /// Calls the delete method on all deletable controls
+    /// </summary>
+    private void Delete()
     {
         ImagePicker.Delete();
         BasicCharacterInfo.Delete();
@@ -209,7 +262,6 @@ public partial class EditCharacter : UserControl
         JinxesTab.Delete();
         FirstNightOrderTab.Delete();
         OtherNightOrderTab.Delete();
-        AppFeaturesTab.Delete();
         AdvancedTab.Delete();
         ReadOnlyLock.Delete();
     }

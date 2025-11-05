@@ -2,20 +2,32 @@ using System.ComponentModel;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Clockmaker0.Data;
 using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures;
 
-public partial class GenericAppFeature : UserControl
+/// <summary>
+/// Control that modifies a single app feature
+/// </summary>
+public partial class GenericAppFeature : UserControl, ILock
 {
-    public ScopeTimes LoadedFeatureScopeTimes { get; set; } = new();
-    public ScopeTimes DefaultScopeTimes { get; set; } = new();
+    private ScopeTimes LoadedFeatureScopeTimes { get; set; } = new();
+    private ScopeTimes DefaultScopeTimes { get; set; } = new();
 
+    /// <inheritdoc />
     public GenericAppFeature()
     {
         InitializeComponent();
     }
 
+    /// <summary>
+    /// Load the current generic app feature data
+    /// </summary>
+    /// <param name="description">Explanation</param>
+    /// <param name="times">When the feature is enabled</param>
+    /// <param name="example">An example of a character with this feature</param>
+    /// <param name="defaultTimes">The default times to set if the feature is enabled without setting a time</param>
     public void Load(string description, ScopeTimes times, string example, ScopeTimes defaultTimes)
     {
         DescriptionTextBlock.Text = description;
@@ -90,12 +102,14 @@ public partial class GenericAppFeature : UserControl
         }
     }
 
+    /// <inheritdoc />
     public void Lock()
     {
         TimeScopeGrid.IsEnabled = false;
         IsEnabledComboBox.IsEnabled = false;
     }
 
+    /// <inheritdoc />
     public void Unlock()
     {
         TimeScopeGrid.IsEnabled = true;

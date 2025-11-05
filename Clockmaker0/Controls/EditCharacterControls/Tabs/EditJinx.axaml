@@ -1,23 +1,23 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="50"
-             x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.EditJinx" Margin="0,0,0,10">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" MinWidth="150"/>
-            <ColumnDefinition Width="10"/>
-            <ColumnDefinition Width="Auto" MinWidth="200"/>
-            <ColumnDefinition Width="10"/>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="10"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <ComboBox Grid.Column="0" x:Name="SourceComboBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-        <ComboBox Grid.Column="2" x:Name="ChildComboBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-        <TextBox Grid.Column="2" x:Name="ChildTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Center" IsEnabled="false" IsVisible="False"/>
-        <TextBox Grid.Column="4" x:Name="JinxTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextWrapping="WrapWithOverflow" VerticalContentAlignment="Top"/>
-        <Button Grid.Column="6" x:Name="DeleteButton" Content="X" Click="DeleteButton_OnClick" Height="30"/>
-    </Grid>
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="50"
+			 x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.EditJinx" Margin="0,0,0,10">
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto" MinWidth="150"/>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="Auto" MinWidth="200"/>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="3*"/>
+			<ColumnDefinition Width="10"/>
+			<ColumnDefinition Width="Auto"/>
+		</Grid.ColumnDefinitions>
+		<ComboBox Grid.Column="0" x:Name="SourceComboBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+		<ComboBox Grid.Column="2" x:Name="ChildComboBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+		<TextBox Grid.Column="2" x:Name="ChildTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Center" IsEnabled="false" IsVisible="False"/>
+		<TextBox Grid.Column="4" x:Name="JinxTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextWrapping="WrapWithOverflow" VerticalContentAlignment="Top"/>
+		<Button Grid.Column="6" x:Name="DeleteButton" Content="✕" Click="DeleteButton_OnClick" Height="30"/>
+	</Grid>
 </UserControl>
