@@ -175,6 +175,7 @@ public partial class MainWindow : Window, IDisposable
                         continue;
                     //File Not Found
                     default:
+                        //todo: Something
                         continue;
                 }
             }

@@ -236,6 +236,17 @@ public class App : Application
                 {
                     await MainWindow.OpenScriptsAsync(Args.Dequeue());
                 }
+
+                if (OpenWindows.IsEmpty)
+                {
+                    MainWindow.Create().Show();
+                }
+
+                if (OpenWindows.IsEmpty)
+                {
+                    //Just in case I somehow completely screw this up
+                    throw new Exception("Fatal error: Could not open window despite opening window");
+                }
             });
         }
 
