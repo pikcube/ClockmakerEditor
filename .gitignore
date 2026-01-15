@@ -362,3 +362,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 /Clockmaker0/Controls/Publish/Secret.cs
+/Clockmaker0/Controls/Publish/Secret.cs
