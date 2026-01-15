@@ -15,53 +15,48 @@ namespace Clockmaker0;
 /// </summary>
 public sealed class PersistentDataStore : INotifyPropertyChanged
 {
-    [JsonIgnore]
-    private int _columnCount;
-    [JsonIgnore]
-    private DefaultAction _previewActionDefault;
-    [JsonIgnore]
-    private ThemeEnum _theme;
-    [JsonIgnore]
-    private bool _isIdEditable;
-
     /// <summary>
     /// Toggle between one column layout and two column layout. Set it to 0 to adjust based on Window size
     /// </summary>
     [JsonProperty(nameof(ColumnCount))]
+    [field: JsonIgnore]
     public int ColumnCount
     {
-        get => _columnCount;
-        set => SetField(ref _columnCount, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     /// <summary>
     /// The default action for clicking on the script preview button
     /// </summary>
     [JsonProperty(nameof(PreviewActionDefault))]
+    [field: JsonIgnore]
     public DefaultAction PreviewActionDefault
     {
-        get => _previewActionDefault;
-        set => SetField(ref _previewActionDefault, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     /// <summary>
     /// The currently selected app theme
     /// </summary>
     [JsonProperty(nameof(Theme))]
+    [field: JsonIgnore]
     public ThemeEnum Theme
     {
-        get => _theme;
-        set => SetField(ref _theme, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     /// <summary>
     /// True if the ID is visible for the user to mutate, False otherwise
     /// </summary>
     [JsonProperty(nameof(IsIdEditable))]
+    [field: JsonIgnore]
     public bool IsIdEditable
     {
-        get => _isIdEditable;
-        set => SetField(ref _isIdEditable, value);
+        get;
+        set => SetField(ref field, value);
     }
 
     /// <summary>

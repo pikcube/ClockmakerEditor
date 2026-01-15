@@ -2,6 +2,9 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Avalonia.Threading;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Base;
+using MsBox.Avalonia.Enums;
 
 namespace Clockmaker0.Data;
 
@@ -19,10 +22,13 @@ static class TaskManager
 
     private static void HandleResult(Task task, string? memberName, int line, string? path)
     {
-        if (task.IsFaulted)
+        if (!task.IsFaulted)
         {
-            throw new Exception($"Task Faulted from {memberName}. Line: {line}. File: {path}",
-                task.Exception.InnerException ?? task.Exception);
+            return;
         }
+
+        IMsBox<ButtonResult> msg = MessageBoxManager.GetMessageBoxStandard("Bug Detected",
+            $"Task Faulted from {memberName}. Line: {line}. File: {path}\n{(task.Exception.InnerException ?? task.Exception).Message}");
+        _ = msg.ShowWindowAsync();
     }
 }

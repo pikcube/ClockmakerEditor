@@ -14,6 +14,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -100,16 +101,16 @@ public static class HighlanderValidator
         }
     }
 
-    private static string? _mutexName;
+    [field: AllowNull, MaybeNull]
     private static string MutexName
     {
         get
         {
             lock (SyncRoot)
             {
-                if (_mutexName != null)
+                if (field != null)
                 {
-                    return _mutexName;
+                    return field;
                 }
 
                 Assembly? assembly = Assembly.GetEntryAssembly();
@@ -141,8 +142,8 @@ public static class HighlanderValidator
                     if (sbMutextName.Length == 64) { break; }
                     sbMutextName.AppendFormat("{0:X2}", b);
                 }
-                _mutexName = sbMutextName.ToString();
-                return _mutexName;
+                field = sbMutextName.ToString();
+                return field;
             }
         }
     }

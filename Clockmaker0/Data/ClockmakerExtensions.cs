@@ -19,23 +19,35 @@ namespace Clockmaker0.Data;
 public static class ClockmakerExtensions
 {
     /// <summary>
-    /// Mutate the loaded character's id, then rename any image files in the clockmaker file.
+    /// Extension methods on Mutable Character
     /// </summary>
-    /// <param name="c">The character to fork</param>
-    /// <param name="script">The script containing the character</param>
-    /// <param name="loader">The image loader</param>
-    /// <param name="newId">The new character id</param>
-    public static async Task ForkAsync(this MutableCharacter c, MutableBotcScript script, ScriptImageLoader loader, string newId)
+    /// <param name="c">The implicit character (this)</param>
+    extension(MutableCharacter c)
     {
-        await loader.ForkAsync(c, script, newId);
+        /// <summary>
+        /// Mutate the loaded character's id, then rename any image files in the clockmaker file.
+        /// </summary>
+        /// <param name="script">The script containing the character</param>
+        /// <param name="loader">The image loader</param>
+        /// <param name="newId">The new character id</param>
+        public async Task ForkAsync(MutableBotcScript script, ScriptImageLoader loader, string newId)
+        {
+            await loader.ForkAsync(c, script, newId);
+        }
     }
 
     /// <summary>
-    /// Convert a BotcScript into a MutableBotcScript
+    /// Extensions of the BotcScript class
     /// </summary>
     /// <param name="script">The script to convert</param>
-    /// <returns></returns>
-    public static MutableBotcScript ToMutable(this BotcScript script) => new(script, ScriptParse.Base);
+    extension(BotcScript script)
+    {
+        /// <summary>
+        /// Convert a BotcScript into a MutableBotcScript
+        /// </summary>
+        /// <returns></returns>
+        public MutableBotcScript ToMutable() => new(script, ScriptParse.Base);
+    }
 
     /// <summary>
     /// A hack to call Focus on controls before they are loaded. Calling Focus on a control will normally fail if the control has not been attacked to the visual tree.

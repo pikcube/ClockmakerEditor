@@ -35,9 +35,6 @@ namespace Clockmaker0;
 /// </summary>
 public partial class MainWindow : Window, IDisposable
 {
-    private ZipArchive _clockFile = new(new MemoryStream(), ZipArchiveMode.Update);
-    private IStorageFile? _pathToOpenFile;
-    private MutableBotcScript? _loadedScript;
     private const string MetaReadme = "This directory contains all the script art\r\n\r\nPath: script/{property}.png";
     private const string TokenReadme = "This directory contains all the token art for each character on the script\r\n\r\nPath: token/{id}/{index}.png";
 
@@ -46,45 +43,45 @@ public partial class MainWindow : Window, IDisposable
     private ScriptImageLoader? ImageLoader { get; set; }
     private List<PopOutWindow> PopOutWindows { get; } = [];
     private List<IStorageFile> RecentlyOpenedFiles { get; } = [];
+
     private ZipArchive ClockFile
     {
-        get => _clockFile;
+        get;
         set
         {
-            _clockFile.Dispose();
-            _clockFile = value;
+            field.Dispose();
+            field = value;
         }
-    }
+    } = new(new MemoryStream(), ZipArchiveMode.Update);
 
     private IStorageFile? PathToOpenFile
     {
-        get => _pathToOpenFile;
+        get;
         set
         {
-            _pathToOpenFile = value;
-            if (_pathToOpenFile is not null)
+            field = value;
+            if (field is not null)
             {
-                DefaultFolder = _pathToOpenFile.GetParentAsync();
+                DefaultFolder = field.GetParentAsync();
             }
-
         }
     }
 
     private MutableBotcScript? LoadedScript
     {
-        get => _loadedScript;
+        get;
         set
         {
-            if (_loadedScript != null)
+            if (field != null)
             {
-                _loadedScript.Characters.OrderChanged -= Characters_OrderChanged;
+                field.Characters.OrderChanged -= Characters_OrderChanged;
             }
 
-            _loadedScript = value;
+            field = value;
 
-            if (_loadedScript != null)
+            if (field != null)
             {
-                _loadedScript.Characters.OrderChanged += Characters_OrderChanged;
+                field.Characters.OrderChanged += Characters_OrderChanged;
             }
         }
     }
@@ -385,7 +382,7 @@ public partial class MainWindow : Window, IDisposable
     /// </summary>
     public void Dispose()
     {
-        _clockFile.Dispose();
+        ClockFile.Dispose();
         PathToOpenFile?.Dispose();
         GC.SuppressFinalize(this);
     }
@@ -1049,7 +1046,7 @@ public partial class MainWindow : Window, IDisposable
     {
         App.AddOpenWindow(this);
 
-        TaskManager.ScheduleTask(() => DisplayErrors(LoadedScript?.Errors ?? ReadOnlyCollection<string>.Empty, this));
+        TaskManager.ScheduleTask(() => DisplayErrors(LoadedScript?.Errors ?? [], this));
         TaskManager.ScheduleAsyncTask(async () =>
         {
             List<IStorageFile> files = [];
@@ -1357,15 +1354,19 @@ public partial class MainWindow : Window, IDisposable
                 return;
             }
 
-            await using Stream saveStream = await saveFile.OpenWriteAsync();
-            using ZipArchive newArchive = new(saveStream);
-            foreach (ZipArchiveEntry entry in ClockFile.Entries)
+            await using (Stream saveStream = await saveFile.OpenWriteAsync())
             {
-                ZipArchiveEntry newEntry = newArchive.CreateEntry(entry.FullName);
-                await using Stream newStream = newEntry.Open();
-                await using Stream oldStream = entry.Open();
-                await oldStream.CopyToAsync(newStream);
+                await using ZipArchive newArchive = new(saveStream, ZipArchiveMode.Create);
+                foreach (ZipArchiveEntry entry in ClockFile.Entries)
+                {
+                    ZipArchiveEntry newEntry = newArchive.CreateEntry(entry.FullName);
+                    await using Stream newStream = await newEntry.OpenAsync();
+                    await using Stream oldStream = await entry.OpenAsync();
+                    await oldStream.CopyToAsync(newStream);
+                }
             }
+
+            await Launcher.LaunchFileAsync(saveFile);
         });
     }
 
