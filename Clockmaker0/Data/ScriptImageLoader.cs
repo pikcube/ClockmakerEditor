@@ -41,7 +41,6 @@ public class ScriptImageLoader : IDisposable
     private HttpClient? Client { get; set; }
     private ConcurrentDictionary<string, Bitmap> LoadedImages { get; } = [];
     private static ConcurrentDictionary<string, Bitmap> OfficialImages { get; } = [];
-    private static ConcurrentDictionary<(TeamEnum, int), Bitmap> DefaultImages { get; } = [];
     /// <summary>
     /// Default image loader, always returns null, can't set images. Useful for intitalizing controls prior to data being loaded.
     /// </summary>
@@ -125,40 +124,42 @@ public class ScriptImageLoader : IDisposable
     /// <param name="key">The path to the image</param>
     /// <param name="defaultPath">The fallback path (if we are working on a copy)</param>
     /// <returns>The image or an error image</returns>
-    public async Task<Bitmap> GetImageAsync(string key, string defaultPath)
+    public async Task<Bitmap> GetImageAsync(ReferenceProperty<string> key, string defaultPath)
     {
-        if (LoadedImages.TryGetValue(key, out Bitmap? img))
+        if (LoadedImages.TryGetValue(key.Get(), out Bitmap? img))
         {
             return img;
         }
 
-        if (key.StartsWith("http"))
+        if (key.Get().StartsWith("http"))
         {
             return await GetBitmapFromUrlAsync(key, defaultPath);
         }
 
-        await using Stream? data = GetEntryStream(key);
+        await using Stream? data = GetEntryStream(key.Get());
 
         if (data is not null)
         {
             using MagickImage image = new(data);
-            return await LoadBitmapFromMagickImageAsync(image, key);
+            return await LoadBitmapFromMagickImageAsync(image, key.Get());
         }
 
-        if (key == defaultPath)
+        if (key.Get() == defaultPath)
         {
             return GetDefault(TeamEnum.Special, -1);
         }
+        
+        key.Set(defaultPath);
 
-        return await GetImageAsync(defaultPath, defaultPath);
+        return await GetImageAsync(key, defaultPath);
     }
 
-    private async Task<Bitmap> GetBitmapFromUrlAsync(string key, string defaultPath)
+    private async Task<Bitmap> GetBitmapFromUrlAsync(ReferenceProperty<string> key, string defaultPath)
     {
         try
         {
             Client ??= new HttpClient();
-            await using Stream webStream = await Client.GetStreamAsync(key);
+            await using Stream webStream = await Client.GetStreamAsync(key.Get());
             using MagickImage magick = new(webStream);
 
             if (GetSetEntryStream is null)
@@ -168,6 +169,8 @@ public class ScriptImageLoader : IDisposable
 
             await using Stream zipStream = GetSetEntryStream.Invoke(defaultPath);
             await magick.WriteAsync(zipStream, format: MagickFormat.Png);
+
+            key.Set(defaultPath);
 
             return await LoadBitmapFromMagickImageAsync(magick, defaultPath);
         }
@@ -353,18 +356,12 @@ public class ScriptImageLoader : IDisposable
     {
         cTeam ??= TeamEnum.Fabled;
 
-        if (DefaultImages.TryGetValue((cTeam.Value, index), out Bitmap? value))
-        {
-            return value;
-        }
-
-        using Stream stream = ThisAssembly.GetManifestResourceStream($"Clockmaker0.default.{(int)cTeam.Value}_{index}.webp")
+        Stream stream = ThisAssembly.GetManifestResourceStream($"Clockmaker0.default.{(int)cTeam.Value}_{index}.webp")
                         ?? ThisAssembly.GetManifestResourceStream($"Clockmaker0.default.{0}_{-1}.webp")
                         ?? throw new NoNullAllowedException();
 
         Bitmap bmp = new(stream);
 
-        DefaultImages.TryAdd((cTeam.Value, index), bmp);
         return bmp;
 
     }

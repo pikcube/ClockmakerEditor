@@ -331,7 +331,7 @@ public partial class MainWindow : Window, IDisposable
         {
             PathToOpenFile?.Dispose();
             PathToOpenFile = file;
-            ClockFile.Dispose();
+            await ClockFile.DisposeAsync();
 
             await LoadScriptFileAsync(file);
             Show();

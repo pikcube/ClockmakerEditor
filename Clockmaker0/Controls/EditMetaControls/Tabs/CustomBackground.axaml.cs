@@ -119,7 +119,7 @@ public partial class CustomBackground : UserControl
             DeleteButton.IsEnabled = true;
             TaskManager.ScheduleAsyncTask(async () =>
             {
-                BackgroundImage.Source = await Loader.GetImageAsync(LoadedMeta.Background, "script/background.png");
+                BackgroundImage.Source = await Loader.GetImageAsync(new ReferenceProperty<string>(() => LoadedMeta.Background, LoadedMeta), "script/background.png");
             });
         }
     }

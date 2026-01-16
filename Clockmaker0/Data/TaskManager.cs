@@ -27,8 +27,11 @@ static class TaskManager
             return;
         }
 
-        IMsBox<ButtonResult> msg = MessageBoxManager.GetMessageBoxStandard("Bug Detected",
-            $"Task Faulted from {memberName}. Line: {line}. File: {path}\n{(task.Exception.InnerException ?? task.Exception).Message}");
-        _ = msg.ShowWindowAsync();
+        Dispatcher.UIThread.Invoke(() =>
+        {
+            IMsBox<ButtonResult> msg = MessageBoxManager.GetMessageBoxStandard("Bug Detected",
+                $"Task Faulted from {memberName}. Line: {line}. File: {path}\n{(task.Exception.InnerException ?? task.Exception).Message}");
+            _ = msg.ShowWindowAsync();
+        });
     }
 }
