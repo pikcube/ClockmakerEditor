@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Data;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -14,11 +15,56 @@ public partial class GenericAppFeature : UserControl, ILock
 {
     private ScopeTimes LoadedFeatureScopeTimes { get; set; } = new();
     private ScopeTimes DefaultScopeTimes { get; set; } = new();
+    private ReferenceProperty<bool>? RefBool { get; set; }
 
     /// <inheritdoc />
     public GenericAppFeature()
     {
         InitializeComponent();
+    }
+
+    /// <summary>
+    /// Load the current generic app feature data
+    /// </summary>
+    /// <param name="description">Explanation</param>
+    /// <param name="example">An example of a character with this feature</param>
+    /// <param name="referenceProperty">Function returning the property to update</param>
+    public void Load(string description, string example, ReferenceProperty<bool> referenceProperty)
+    {
+        DescriptionTextBlock.Text = description;
+        ExampleTextBlock.Text = example;
+        RefBool = referenceProperty;
+
+
+        TimeScopeGrid.IsVisible = false;
+        ExpandButton.IsVisible = false;
+        TimeScopeGrid.IsEnabled = false;
+        ExpandButton.IsEnabled = false;
+        IsEnabledComboBox.SelectedIndex = RefBool.Get() ? 1 : 0;
+
+        IsEnabledComboBox.SelectionChanged += IsEnabledComboBox_BindedBoolean_SelectionChanged;
+        RefBool.PropertyChanged += ReferenceProperty_PropertyChanged;
+        
+
+    }
+
+    private void ReferenceProperty_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (RefBool is null)
+        {
+            throw new NoNullAllowedException();
+        }
+        IsEnabledComboBox.SelectedIndex = RefBool.Get() ? 1 : 0;
+    }
+
+    private void IsEnabledComboBox_BindedBoolean_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (RefBool is null)
+        {
+            throw new NoNullAllowedException();
+        }
+
+        RefBool.Set(IsEnabledComboBox.SelectedIndex == 1);
     }
 
     /// <summary>
@@ -37,14 +83,7 @@ public partial class GenericAppFeature : UserControl, ILock
 
         TimeScopeGrid.Load(LoadedFeatureScopeTimes);
 
-        if (LoadedFeatureScopeTimes.GetPairs(true).Any())
-        {
-            IsEnabledComboBox.SelectedIndex = 1;
-        }
-        else
-        {
-            IsEnabledComboBox.SelectedIndex = 0;
-        }
+        IsEnabledComboBox.SelectedIndex = LoadedFeatureScopeTimes.GetPairs(true).Any() ? 1 : 0;
 
         ExpandButton.Click += ExpandButton_Click;
         TimeScopeGrid.CheckBoxChanged += TimeScopeGrid_CheckBoxChanged;
@@ -69,14 +108,7 @@ public partial class GenericAppFeature : UserControl, ILock
         }
 
 
-        if (LoadedFeatureScopeTimes.GetPairs(true).Any())
-        {
-            IsEnabledComboBox.SelectedIndex = 1;
-        }
-        else
-        {
-            IsEnabledComboBox.SelectedIndex = 0;
-        }
+        IsEnabledComboBox.SelectedIndex = LoadedFeatureScopeTimes.GetPairs(true).Any() ? 1 : 0;
     }
 
     private void LoadedFeatureScopeTimes_PropertyChanged(object? sender, PropertyChangedEventArgs e)

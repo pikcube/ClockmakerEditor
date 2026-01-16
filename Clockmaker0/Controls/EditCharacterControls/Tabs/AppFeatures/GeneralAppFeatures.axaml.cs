@@ -23,6 +23,8 @@ public partial class GeneralAppFeatures : UserControl, ILock
     /// <param name="features">The features to load</param>
     public void Load(MutableAppFeatures features)
     {
+        GoodDuplicatesFeature.Load("Allow Duplicates of Good Roles", "Atheist, Pope", new ReferenceProperty<bool>(() => features.IsGoodDuplicates, features));
+
         DistributeRolesFeature.Load("Manually Distribute Roles", features.AbilityDistributeRoles, "Example: Gardener", new ScopeTimes { None = TimeOfDay.Pregame });
         DistributeRolesFeature.TimeScopeGrid.ShowHideColumn(2, false);
         DistributeRolesFeature.TimeScopeGrid.ShowHideColumn(3, false);
@@ -47,6 +49,7 @@ public partial class GeneralAppFeatures : UserControl, ILock
     /// <inheritdoc />
     public void Lock()
     {
+        GoodDuplicatesFeature.Lock();
         DistributeRolesFeature.Lock();
         GhostVotesFeature.Lock();
         PointingFeature.Lock();
@@ -57,6 +60,7 @@ public partial class GeneralAppFeatures : UserControl, ILock
     /// <inheritdoc />
     public void Unlock()
     {
+        GoodDuplicatesFeature.Unlock();
         DistributeRolesFeature.Unlock();
         GhostVotesFeature.Unlock();
         PointingFeature.Unlock();

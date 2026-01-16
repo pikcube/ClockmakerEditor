@@ -6,6 +6,7 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
              x:Class="Clockmaker0.Controls.EditCharacterControls.Tabs.AppFeatures.GeneralAppFeatures">
     <StackPanel x:Name="Panel">
+        <appFeatures:GenericAppFeature x:Name="GoodDuplicatesFeature"/>
         <appFeatures:GenericAppFeature x:Name="DistributeRolesFeature"/>
         <appFeatures:GenericAppFeature x:Name="GhostVotesFeature"/>
         <appFeatures:GenericAppFeature x:Name="PointingFeature"/>
