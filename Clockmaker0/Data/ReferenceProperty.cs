@@ -34,9 +34,8 @@ public class ReferenceProperty<T> : INotifyPropertyChanged
             {
                 MethodInfo? setMethod = propertyInfo.GetSetMethod();
                 _setter = setMethod is not null
-                    ? Expression.Lambda<Action<T>>(Expression.Call(instanceExpression, setMethod, parameter),
-                        parameter).Compile()
-                    : t => throw new ReadOnlyException("Property is read only");
+                    ? Expression.Lambda<Action<T>>(Expression.Call(instanceExpression, setMethod, parameter), parameter).Compile()
+                    : _ => throw new ReadOnlyException("Property is read only");
                     
                 MethodInfo? getMethod = propertyInfo.GetGetMethod();
                 _getter = getMethod is not null 
@@ -76,16 +75,21 @@ public class ReferenceProperty<T> : INotifyPropertyChanged
     }
 
     /// <summary>
-    /// Set the value of the wrapped property
+    /// Implicitly access the value method for getting a reference property's value
     /// </summary>
-    /// <param name="value">New value</param>
-    public void Set(T value) => _setter(value);
+    /// <param name="referenceProperty">The property to unwrap</param>
+    /// <returns></returns>
+    public static implicit operator T(ReferenceProperty<T> referenceProperty) => referenceProperty.Value;
+
 
     /// <summary>
-    /// Get the value of the wrapped property
+    /// The underlying wrapped property
     /// </summary>
-    /// <returns>The value of the property</returns>
-    public T Get() => _getter();
+    public T Value
+    {
+        get => _getter();
+        set => _setter(value);
+    }
 
 
     /// <summary>

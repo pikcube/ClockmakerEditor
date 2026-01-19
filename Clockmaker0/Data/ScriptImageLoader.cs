@@ -126,30 +126,30 @@ public class ScriptImageLoader : IDisposable
     /// <returns>The image or an error image</returns>
     public async Task<Bitmap> GetImageAsync(ReferenceProperty<string> key, string defaultPath)
     {
-        if (LoadedImages.TryGetValue(key.Get(), out Bitmap? img))
+        if (LoadedImages.TryGetValue(key, out Bitmap? img))
         {
             return img;
         }
 
-        if (key.Get().StartsWith("http"))
+        if (key.Value.StartsWith("http"))
         {
             return await GetBitmapFromUrlAsync(key, defaultPath);
         }
 
-        await using Stream? data = GetEntryStream(key.Get());
+        await using Stream? data = GetEntryStream(key);
 
         if (data is not null)
         {
             using MagickImage image = new(data);
-            return await LoadBitmapFromMagickImageAsync(image, key.Get());
+            return await LoadBitmapFromMagickImageAsync(image, key);
         }
 
-        if (key.Get() == defaultPath)
+        if (key == defaultPath)
         {
             return GetDefault(TeamEnum.Special, -1);
         }
         
-        key.Set(defaultPath);
+        key.Value = defaultPath;
 
         return await GetImageAsync(key, defaultPath);
     }
@@ -159,7 +159,7 @@ public class ScriptImageLoader : IDisposable
         try
         {
             Client ??= new HttpClient();
-            await using Stream webStream = await Client.GetStreamAsync(key.Get());
+            await using Stream webStream = await Client.GetStreamAsync(key);
             using MagickImage magick = new(webStream);
 
             if (GetSetEntryStream is null)
@@ -170,7 +170,7 @@ public class ScriptImageLoader : IDisposable
             await using Stream zipStream = GetSetEntryStream.Invoke(defaultPath);
             await magick.WriteAsync(zipStream, format: MagickFormat.Png);
 
-            key.Set(defaultPath);
+            key.Value = (defaultPath);
 
             return await LoadBitmapFromMagickImageAsync(magick, defaultPath);
         }

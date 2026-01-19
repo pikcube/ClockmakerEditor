@@ -40,7 +40,7 @@ public partial class GenericAppFeature : UserControl, ILock
         ExpandButton.IsVisible = false;
         TimeScopeGrid.IsEnabled = false;
         ExpandButton.IsEnabled = false;
-        IsEnabledComboBox.SelectedIndex = RefBool.Get() ? 1 : 0;
+        IsEnabledComboBox.SelectedIndex = RefBool ? 1 : 0;
 
         IsEnabledComboBox.SelectionChanged += IsEnabledComboBox_BindedBoolean_SelectionChanged;
         RefBool.PropertyChanged += ReferenceProperty_PropertyChanged;
@@ -54,7 +54,7 @@ public partial class GenericAppFeature : UserControl, ILock
         {
             throw new NoNullAllowedException();
         }
-        IsEnabledComboBox.SelectedIndex = RefBool.Get() ? 1 : 0;
+        IsEnabledComboBox.SelectedIndex = RefBool ? 1 : 0;
     }
 
     private void IsEnabledComboBox_BindedBoolean_SelectionChanged(object? sender, SelectionChangedEventArgs e)
@@ -64,7 +64,7 @@ public partial class GenericAppFeature : UserControl, ILock
             throw new NoNullAllowedException();
         }
 
-        RefBool.Set(IsEnabledComboBox.SelectedIndex == 1);
+        RefBool.Value = IsEnabledComboBox.SelectedIndex == 1;
     }
 
     /// <summary>
