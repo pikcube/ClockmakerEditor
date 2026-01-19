@@ -12,6 +12,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using ImageMagick;
 using JetBrains.Annotations;
+using Pikcube.AddIns;
 using Pikcube.ReadWriteScript.Core;
 using Pikcube.ReadWriteScript.Core.Mutable;
 using Pikcube.ReadWriteScript.Offline;

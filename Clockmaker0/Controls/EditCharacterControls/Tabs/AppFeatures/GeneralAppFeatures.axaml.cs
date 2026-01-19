@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Clockmaker0.Data;
+using Pikcube.AddIns;
 using Pikcube.ReadWriteScript.Core.Mutable;
 using Pikcube.ReadWriteScript.Core.Special;
 
