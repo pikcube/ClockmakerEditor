@@ -34,7 +34,7 @@ public class App : Application
     /// <summary>
     /// Represents the Current App Version
     /// </summary>
-    public static string BetaVersionNumber => "0.1.0.7";
+    public static string BetaVersionNumber => "0.1.0.8";
 
     /// <summary>
     /// Set that a particular key is up or down
