@@ -8,6 +8,7 @@ using ImageMagick;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Base;
 using MsBox.Avalonia.Enums;
+using Pikcube.AddIns;
 using Pikcube.ReadWriteScript.Core.Mutable;
 
 namespace Clockmaker0.Controls.EditMetaControls.Tabs;
