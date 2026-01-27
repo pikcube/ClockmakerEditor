@@ -414,13 +414,13 @@ public partial class MainWindow : Window, IDisposable
         loadedScript.Save();
         clockFile.GetEntry("script.json")?.Delete();
         ZipArchiveEntry entry = clockFile.CreateEntry("script.json");
-        await using Stream stream = entry.Open();
+        await using Stream stream = await entry.OpenAsync();
         await using StreamWriter writer = new(stream);
         await writer.WriteAsync(ScriptParse.SerializeScript(loadedScript, Formatting.Indented, isExtended: false));
 
         clockFile.GetEntry("almanac.md")?.Delete();
         ZipArchiveEntry almanacEntry = clockFile.CreateEntry("almanac.md");
-        await using Stream almanacStream = almanacEntry.Open();
+        await using Stream almanacStream = await almanacEntry.OpenAsync();
         await using StreamWriter almanacWriter = new(almanacStream);
         await writer.WriteAsync(loadedScript.Meta.AlmanacData ?? "");
 
@@ -438,7 +438,7 @@ public partial class MainWindow : Window, IDisposable
             ZipArchiveEntry? almanacEntry = ClockFile.GetEntry("almanac.md");
             if (almanacEntry is not null)
             {
-                await using Stream almanacStream = almanacEntry.Open();
+                await using Stream almanacStream = await almanacEntry.OpenAsync();
                 using StreamReader reader = new(almanacStream);
                 almanac = await reader.ReadToEndAsync();
             }
@@ -464,7 +464,7 @@ public partial class MainWindow : Window, IDisposable
         MutableBotcScript loadedScript = ScriptParse.DeserializeMutableBotcScript(await reader.ReadToEndAsync());
 
         loadedScript.Save();
-        await using Stream scriptEntry = clockFile.CreateEntry("script.json").Open();
+        await using Stream scriptEntry = await clockFile.CreateEntry("script.json").OpenAsync();
         await using StreamWriter writer = new(scriptEntry);
         await writer.WriteAsync(ScriptParse.SerializeScript(loadedScript));
         return (loadedScript, clockFile);
@@ -481,7 +481,7 @@ public partial class MainWindow : Window, IDisposable
         ZipArchive clockFile = new(ms, ZipArchiveMode.Update);
 
         ZipArchiveEntry entry = clockFile.GetEntry("script.json") ?? throw new NoNullAllowedException();
-        await using Stream file = entry.Open();
+        await using Stream file = await entry.OpenAsync();
         using StreamReader reader = new(file);
 
         MutableBotcScript loadedScript = ScriptParse.DeserializeMutableBotcScript(await reader.ReadToEndAsync());
@@ -518,7 +518,7 @@ public partial class MainWindow : Window, IDisposable
         }
 
         ZipArchiveEntry entry = clockFile.CreateEntry(path);
-        await using Stream entryStream = entry.Open();
+        await using Stream entryStream = await entry.OpenAsync();
         await using StreamWriter writer = new(entryStream);
         await writer.WriteAsync(value);
     }
@@ -631,7 +631,7 @@ public partial class MainWindow : Window, IDisposable
         {
             PathToOpenFile?.Dispose();
             PathToOpenFile = file;
-            ClockFile.Dispose();
+            await ClockFile.DisposeAsync();
 
             await LoadScriptFileAsync(file);
         }
@@ -702,12 +702,12 @@ public partial class MainWindow : Window, IDisposable
         }
 
         await using Stream fileStream = await file.OpenWriteAsync();
-        using ZipArchive newArchive = new(fileStream, ZipArchiveMode.Create);
+        await using ZipArchive newArchive = new(fileStream, ZipArchiveMode.Create);
         foreach (ZipArchiveEntry entry in clockFile.Entries)
         {
-            await using Stream stream = entry.Open();
+            await using Stream stream = await entry.OpenAsync();
             ZipArchiveEntry newEntry = newArchive.CreateEntry(entry.FullName, CompressionLevel.SmallestSize);
-            await using Stream newStream = newEntry.Open();
+            await using Stream newStream = await newEntry.OpenAsync();
             await stream.CopyToAsync(newStream);
         }
 

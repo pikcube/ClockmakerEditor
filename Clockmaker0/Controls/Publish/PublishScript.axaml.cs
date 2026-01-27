@@ -272,7 +272,7 @@ public partial class PublishScript : Window
                     continue;
                 }
 
-                await using Stream s = image.Open();
+                await using Stream s = await image.OpenAsync();
 
                 RepositoryContentChangeSet? result = await client.CreateOrUpdateContentAsync(fileContents, repo.Id, character.Image[index], await s.ToBase64Async());
                 UploadProgressBar.Value++;
@@ -298,12 +298,12 @@ public partial class PublishScript : Window
         await writer.WriteAsync(output);
 
         await using MemoryStream zipms = new();
-        using ZipArchive newArchive = new(zipms, ZipArchiveMode.Create);
+        await using ZipArchive newArchive = new(zipms, ZipArchiveMode.Create);
         foreach (ZipArchiveEntry entry in clockmakerFile.Entries)
         {
             ZipArchiveEntry newEntry = newArchive.CreateEntry(entry.FullName);
-            await using Stream newStream = newEntry.Open();
-            await using Stream oldStream = entry.Open();
+            await using Stream newStream = await newEntry.OpenAsync();
+            await using Stream oldStream = await entry.OpenAsync();
             await oldStream.CopyToAsync(newStream);
         }
 
@@ -327,7 +327,7 @@ public partial class PublishScript : Window
                 return;
             }
 
-            await using Stream s = image.Open();
+            await using Stream s = await image.OpenAsync();
 
             RepositoryContentChangeSet? result = await client.CreateOrUpdateContentAsync(fileContents, repo.Id,
                 publishScript.Meta.Logo, await s.ToBase64Async());
@@ -355,7 +355,7 @@ public partial class PublishScript : Window
             }
 
 
-            await using Stream s = image.Open();
+            await using Stream s = await image.OpenAsync();
 
             RepositoryContentChangeSet? result = await client.CreateOrUpdateContentAsync(fileContents, repo.Id,
                 publishScript.Meta.Background, await s.ToBase64Async());
