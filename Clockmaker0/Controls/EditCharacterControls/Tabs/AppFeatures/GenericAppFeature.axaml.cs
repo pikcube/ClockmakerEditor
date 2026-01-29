@@ -44,12 +44,13 @@ public partial class GenericAppFeature : UserControl, ILock
         IsEnabledComboBox.SelectedIndex = RefBool ? 1 : 0;
 
         IsEnabledComboBox.SelectionChanged += IsEnabledComboBox_BindedBoolean_SelectionChanged;
-        RefBool.PropertyChanged += ReferenceProperty_PropertyChanged;
-        
-
     }
 
-    private void ReferenceProperty_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    /// <summary>
+    /// Called when the underlying reference property updates to a new value
+    /// </summary>
+    /// <exception cref="NoNullAllowedException">Thrown if object was not initialized with a reference property</exception>
+    public void OnReferencePropertyChanged()
     {
         if (RefBool is null)
         {

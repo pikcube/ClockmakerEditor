@@ -133,7 +133,7 @@ public partial class CustomLogo : UserControl
             HideTitleCheckBox.IsChecked = !LoadedMeta.IsHideTitle;
             TaskManager.ScheduleAsyncTask(async () =>
             {
-                LogoImage.Source = await Loader.GetImageAsync(new ReferenceProperty<string>(() => LoadedMeta.Logo, LoadedMeta), "script/logo.png");
+                LogoImage.Source = await Loader.GetImageAsync(new ReferenceProperty<string>(() => LoadedMeta.Logo), "script/logo.png");
             });
         }
     }
