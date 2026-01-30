@@ -118,12 +118,8 @@ public class App : Application
     public static void AddOpenWindow(Window window)
     {
         OpenWindows.GetOrAdd(window, false);
-        if (Desktop is null)
-        {
-            return;
-        }
 
-        Desktop.MainWindow ??= window;
+        Desktop?.MainWindow ??= window;
     }
 
     /// <summary>

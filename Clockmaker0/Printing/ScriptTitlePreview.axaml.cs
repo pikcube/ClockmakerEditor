@@ -1,11 +1,7 @@
-using System;
-using System.ComponentModel;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Avalonia.Media;
-using Clockmaker0.Controls.EditCharacterControls;
-using Clockmaker0.Controls.EditMetaControls;
 using Clockmaker0.Data;
+using JetBrains.Annotations;
 using Pikcube.ReadWriteScript.Core;
 using Pikcube.ReadWriteScript.Core.Mutable;
 
@@ -22,6 +18,7 @@ public partial class ScriptTitlePreview : UserControl
 
 
     /// <inheritdoc />
+    [UsedImplicitly]
     public ScriptTitlePreview() : this(BotcScript.Default.ToMutable(), ScriptImageLoader.Default)
     {
     }
