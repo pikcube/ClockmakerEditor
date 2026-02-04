@@ -61,7 +61,7 @@
 					<MenuItem Header="H_elp">
 						<MenuItem Header="C_heck For Updates" Click="CheckForUpdatesMenuItem_OnClick"/>
 					</MenuItem>
-					<MenuItem Header="_Debug" IsVisible="True" IsEnabled="True">
+					<MenuItem Header="_Debug" IsVisible="False" IsEnabled="False">
 						<MenuItem Header="_Print" Click="DebugMenuItem_OnClick"/>
 					</MenuItem>
 				</Menu>

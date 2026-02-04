@@ -4,7 +4,7 @@
 #include "CodeDependencies.iss"
 
 #define MyAppName "Clockmaker Beta"
-#define MyAppVersion "0.1.0.7"
+#define MyAppVersion "0.1.0.8"
 #define MyAppPublisher "Pikcube"
 #define MyAppURL "https://clockmaker.pikcube.com/beta/"
 #define MyAppExeName "Clockmaker0.exe"
@@ -48,8 +48,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\Michael\source\repos\Clockmaker0\Clockmaker0\bin\Release\net9.0\publish\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\Michael\source\repos\Clockmaker0\Clockmaker0\bin\Release\net9.0\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Michael\source\repos\Clockmaker0\Clockmaker0\bin\Release\net10.0\publish\win-x64\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Michael\source\repos\Clockmaker0\Clockmaker0\bin\Release\net10.0\publish\win-x64\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
@@ -69,9 +69,9 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 function InitializeSetup: Boolean;
 begin
   // comment out functions to disable installing them
-  Dependency_AddDotNet90;
-  Dependency_AddDotNet90Asp;
-  Dependency_AddDotNet90Desktop;
+  Dependency_AddDotNet100;
+  Dependency_AddDotNet100Asp;
+  Dependency_AddDotNet100Desktop;
 
   Result := True;
 end;
