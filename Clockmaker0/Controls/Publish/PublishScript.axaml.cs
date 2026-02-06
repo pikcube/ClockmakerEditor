@@ -442,6 +442,11 @@ public partial class PublishScript : Window
                 TokenStore.DeleteTokenData();
                 continue;
             }
+            catch (AuthorizationException)
+            {
+                TokenStore.DeleteTokenData();
+                continue;
+            }
             TokenStore.SaveTokenData(new TokenData(token));
             return client;
         }
